@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Mentor | Boost Your Placement Game</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#0099f0",
+                    "secondary-fixed-dim": "#f2aaff",
+                    "error-container": "#fb5151",
+                    "inverse-primary": "#00a2fd",
+                    "outline": "#747779",
+                    "on-primary": "#ecf3ff",
+                    "on-tertiary": "#fff0e5",
+                    "surface-bright": "#f5f7f9",
+                    "on-secondary-fixed-variant": "#8417a1",
+                    "on-error": "#ffefee",
+                    "surface-container-low": "#eef1f3",
+                    "tertiary-fixed-dim": "#ec8c00",
+                    "on-primary-container": "#00253f",
+                    "on-secondary": "#ffeefd",
+                    "primary": "#005f98",
+                    "surface-variant": "#d9dde0",
+                    "on-surface-variant": "#595c5e",
+                    "inverse-surface": "#0b0f10",
+                    "primary-container": "#2aa7ff",
+                    "on-tertiary-fixed-variant": "#563000",
+                    "tertiary-fixed": "#ff9800",
+                    "secondary-fixed": "#f7beff",
+                    "on-secondary-container": "#7a0197",
+                    "primary-fixed": "#2aa7ff",
+                    "error-dim": "#9f0519",
+                    "secondary": "#9128ad",
+                    "tertiary": "#874e00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#570008",
+                    "on-secondary-fixed": "#5b0072",
+                    "surface-container": "#e5e9eb",
+                    "surface-dim": "#d0d5d8",
+                    "secondary-container": "#f7beff",
+                    "on-surface": "#2c2f31",
+                    "surface-tint": "#005f98",
+                    "tertiary-container": "#ff9800",
+                    "surface-container-highest": "#d9dde0",
+                    "tertiary-dim": "#764400",
+                    "on-background": "#2c2f31",
+                    "primary-dim": "#005385",
+                    "on-tertiary-fixed": "#271300",
+                    "inverse-on-surface": "#9a9d9f",
+                    "on-tertiary-container": "#4a2800",
+                    "outline-variant": "#abadaf",
+                    "surface": "#f5f7f9",
+                    "error": "#b31b25",
+                    "on-primary-fixed": "#000000",
+                    "secondary-dim": "#8315a0",
+                    "background": "#f5f7f9",
+                    "on-primary-fixed-variant": "#002e4d",
+                    "surface-container-high": "#dfe3e6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            },
+            "animation": {
+                'fade-slide-up': 'fadeSlideUp 0.8s ease-out forwards',
+                'float': 'float 6s ease-in-out infinite',
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'grow-bar': 'growBar 1.5s ease-out forwards',
+                'bg-shift': 'bgShift 10s ease infinite alternate'
+            },
+            "keyframes": {
+                fadeSlideUp: {
+                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-20px)' },
+                },
+                growBar: {
+                    '0%': { height: '0%' },
+                    '100%': { height: 'var(--target-height)' },
+                },
+                bgShift: {
+                    '0%': { backgroundPosition: '0% 50%' },
+                    '100%': { backgroundPosition: '100% 50%' },
+                }
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soul-gradient-primary {
+            background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+        }
+        .soul-gradient-secondary {
+            background: linear-gradient(135deg, #9128ad 0%, #f7beff 100%);
+        }
+        .soul-gradient-tertiary {
+            background: linear-gradient(135deg, #874e00 0%, #ff9800 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(171, 173, 175, 0.15);
+        }
+        .blob-bg {
+            position: absolute;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.3;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .btn-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-hover:hover {
+            transform: scale(1.03);
+        }
+        .card-lift {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation -->
+<nav class="docked full-width top-0 sticky z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_32px_48px_-12px_rgba(0,95,152,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="text-2xl font-black tracking-tight bg-gradient-to-br from-sky-600 to-blue-400 bg-clip-text text-transparent">
+                Kinetic Mentor
+            </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Resume</a>
+<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Job Match</a>
+<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Analysis</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full btn-hover shadow-lg shadow-primary/20">
+                    Get Started
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="relative min-h-screen">
+<!-- Floating Animated Blobs -->
+<div class="blob-bg bg-primary-container w-[600px] h-[600px] rounded-full -top-40 -right-40 animate-float" style="animation-duration: 15s;"></div>
+<div class="blob-bg bg-secondary-container w-[500px] h-[500px] rounded-full bottom-20 -left-20 animate-float" style="animation-delay: -2s; animation-duration: 12s;"></div>
+<div class="blob-bg bg-tertiary-container w-[400px] h-[400px] rounded-full top-[30%] left-[10%] animate-float" style="animation-delay: -5s; animation-duration: 18s;"></div>
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-6 py-16 md:py-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7 space-y-8 animate-fade-slide-up">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-container/10 border border-primary-container/20">
+<span class="text-xs font-bold uppercase tracking-wider text-primary">New Feature</span>
+<span class="w-1 h-1 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-primary">AI Career Analysis 2.0</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-extrabold text-on-surface leading-[1.1] tracking-tight">
+                    Boost Your <span class="bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">Placement Game</span> 🚀
+                </h1>
+<p class="text-lg md:text-xl text-on-surface-variant max-w-xl font-medium leading-relaxed">
+                    Analyze your resume, match with companies, and get personalized guidance to improve your placement chances.
+                </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="soul-gradient-primary text-on-primary text-lg font-bold px-8 py-4 rounded-full btn-hover shadow-[0_20px_40px_-12px_rgba(0,95,152,0.3)]">
+                        Analyze Resume
+                    </button>
+<button class="bg-surface-container-lowest text-primary text-lg font-bold px-8 py-4 rounded-full outline-variant/15 outline outline-1 btn-hover">
+                        Check Company Match
+                    </button>
+</div>
+<div class="flex items-center gap-6 pt-8 border-t border-outline-variant/10">
+<div class="flex -space-x-3">
+<img alt="User 1" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBysVWebRUdKfVD6TngvvwI27BcIYNh-7QljiqgMabNTR53eEbfdfT3tssig6iE-oPyN5CkoBCVifiEvg_ygXCtesZT6rrnJOg-0mxI2rkSqH4mhrjHcSDRRCjuRnkU4a68Ok3O0s5bNPTvRH1p4qXBhOb_E7E42I3IeKXlsK2DshF1TtwVnQajA-58-f2ugrl4EnzckA9HXP-n9HOUMssSsZsgqdyAEYjXqXCVNDXUrhZ-oNnCTVQ6Gpo26CogKL_JYnCXDuBwqeI"/>
+<img alt="User 2" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHxrdh_Pne6j65y8kkeo7jhZVBwQ5WhKFSDXZ-0ahW0hATdkZO0_lgrxE4W9DROVW64hxKo6YJCCDJSdfWrA7CTkVvoaH1101EFFt0I3Z1J6z5N8iEl4susPANSeE7LBvSQ4vP7MHHq9sIuBM8Bwf0HAI2f6yA7rdV08EP9ao1PHI2iqeKn70elKd5qhhr-qsMFFsVoUSF8MGlXAFvYBLPhgBhDcoPrf4Xw1qmaIDRprODv7eRfFQ8GBv5-qqNYnjUHI7y0WyY2kE"/>
+<img alt="User 3" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNlmtl-AZ2gLqVZ-1VzvxsZZXjbqIDmLL3OR81eN9XZ_3xite8GSv7V3mX5i4HriKeXfiOwjlua5jPSTLMNL5Yv8f2rMYXV1FHuuutYzoWgwRPu-hSaB6qAHfsieZvZ0Y-tDHQm1m98vo4KGZPcXNwbV6Nyw98zCUTMxov9ESMnbTsHMQ28E96kaO1hMMpXrYzQcQXKw3X_USaanqVsktN4jOEOUP6w9lj0oY3PFzoSbEvkBqHCZMQl1A4PbETEHa_wZ3D-05aiYo"/>
+</div>
+<p class="text-sm font-semibold text-on-surface-variant">
+<span class="text-on-surface">5,000+ Students</span> placed this month
+                    </p>
+</div>
+</div>
+<!-- Hero Visual -->
+<div class="lg:col-span-5 relative animate-fade-slide-up" style="animation-delay: 0.2s;">
+<div class="relative z-10 w-full aspect-square rounded-xl overflow-hidden glass-card shadow-2xl p-8 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="space-y-1">
+<p class="text-label-md text-primary font-bold uppercase tracking-widest text-[10px]">Active Trajectory</p>
+<h3 class="text-2xl font-bold">Your Career Progress</h3>
+</div>
+<div class="w-12 h-12 rounded-full soul-gradient-secondary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+</div>
+<div class="h-48 w-full flex items-end gap-2 px-4 overflow-hidden">
+<!-- Bar chart with animation -->
+<div class="w-full bg-primary-container/20 rounded-t-lg animate-grow-bar" style="--target-height: 40%; height: 0;"></div>
+<div class="w-full bg-primary-container/30 rounded-t-lg animate-grow-bar" style="--target-height: 60%; height: 0; animation-delay: 0.1s;"></div>
+<div class="w-full bg-primary-container/40 rounded-t-lg animate-grow-bar" style="--target-height: 45%; height: 0; animation-delay: 0.2s;"></div>
+<div class="w-full bg-primary-container/60 rounded-t-lg animate-grow-bar" style="--target-height: 80%; height: 0; animation-delay: 0.3s;"></div>
+<div class="w-full soul-gradient-primary rounded-t-lg shadow-lg shadow-primary/30 animate-grow-bar" style="--target-height: 95%; height: 0; animation-delay: 0.4s;"></div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<span class="font-bold text-sm">Placement Readiness</span>
+</div>
+<span class="font-black text-primary text-xl">94%</span>
+</div>
+</div>
+<!-- Floating Element -->
+<div class="absolute -top-6 -left-6 z-20 glass-card p-4 rounded-lg shadow-xl flex items-center gap-3 animate-float" style="animation-duration: 4s;">
+<div class="w-10 h-10 rounded-full soul-gradient-tertiary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">rocket_launch</span>
+</div>
+<div>
+<p class="text-[10px] font-bold text-tertiary uppercase">Career Boost</p>
+<p class="text-sm font-bold">New Offer Received!</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Motivation Badge -->
+<div class="flex justify-center py-12 px-6 reveal">
+<div class="px-6 py-2 rounded-full bg-white/50 border border-secondary/20 shadow-[0_0_20px_rgba(145,40,173,0.15)] backdrop-blur-md flex items-center gap-2">
+<span class="text-secondary font-bold text-sm">You're one step closer to your dream job 🚀</span>
+</div>
+</div>
+<!-- Features Section -->
+<section class="max-w-7xl mx-auto px-6 py-24">
+<div class="text-center mb-16 space-y-4 reveal">
+<h2 class="text-4xl font-extrabold">Your Career <span class="text-secondary">Supernova</span> Toolset</h2>
+<p class="text-on-surface-variant max-w-2xl mx-auto font-medium">We replaced the old classroom tools with professional-grade momentum builders.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Resume Analysis -->
+<div class="bg-white rounded-xl p-8 card-lift border border-outline-variant/10 reveal" style="transition-delay: 0.1s;">
+<div class="w-14 h-14 rounded-2xl soul-gradient-primary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Resume Analysis</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Get ATS score and identify missing elements to pass filters easily.</p>
+</div>
+<!-- Company Match -->
+<div class="bg-white rounded-xl p-8 card-lift border border-outline-variant/10 reveal" style="transition-delay: 0.2s;">
+<div class="w-14 h-14 rounded-2xl soul-gradient-secondary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">hub</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Company Match</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Check how well your resume matches specific job requirements.</p>
+</div>
+<!-- Skill Gap Detection -->
+<div class="bg-white rounded-xl p-8 card-lift border border-outline-variant/10 reveal" style="transition-delay: 0.3s;">
+<div class="w-14 h-14 rounded-2xl soul-gradient-tertiary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">psychology_alt</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Skill Gap Detection</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Find missing skills and improve strategically with targeted learning.</p>
+</div>
+<!-- Smart Recommendations -->
+<div class="bg-white rounded-xl p-8 card-lift border border-outline-variant/10 reveal" style="transition-delay: 0.4s;">
+<div class="w-14 h-14 rounded-2xl bg-on-surface flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined text-3xl">lightbulb</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Smart Recommendations</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Get videos, project ideas, and internship suggestions tailored to you.</p>
+</div>
+</div>
+</section>
+<!-- Bottom CTA Section -->
+<section class="max-w-7xl mx-auto px-6 py-24 reveal">
+<div class="soul-gradient-primary rounded-xl p-12 md:p-20 text-center space-y-10 relative overflow-hidden animate-bg-shift" style="background-size: 200% 200%;">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<img alt="Background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDptkzCYQKD6TIYwPDlOHpeYZ1Yirf2HRH3Brh92Y4kYxdNP42koVhRECG7EVo1rR7tJSm6sInVgQCXmCAA4-ZKFa00DJDf6rXCwul02uzQ0uD4_l3Kq4cj8Pahswa41lc3rFP8_8qQ6WyowiJN_UFK8gzcxgLHfXe8lZXgBfrGpl3DfxLiTOcSZakX7BU1YqanlNa2plEcu6yuZF7_ASuhe-B46PRILSub-ISdONZ-1V-LHTjgzE-0VKXReI5msUyijjlvRajwHVw"/>
+</div>
+<div class="relative z-10 max-w-3xl mx-auto space-y-6">
+<h2 class="text-4xl md:text-6xl font-black text-on-primary tracking-tight">Ready to Level Up Your Career?</h2>
+<p class="text-on-primary/80 text-lg md:text-xl font-medium">Start analyzing your resume and take the next step towards placement success.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+<button class="bg-surface-container-lowest text-primary text-lg font-bold px-10 py-5 rounded-full btn-hover shadow-xl animate-pulse-slow">
+                            Analyze Resume
+                        </button>
+<button class="bg-transparent border-2 border-white/30 text-on-primary text-lg font-bold px-10 py-5 rounded-full btn-hover hover:bg-white/10">
+                            Try Company Match
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating AI Assistant -->
+<div class="fixed bottom-8 right-8 z-[100] group">
+<div class="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+<div class="bg-white px-4 py-2 rounded-2xl shadow-xl border border-outline-variant/10 text-sm font-bold whitespace-nowrap animate-float" style="animation-duration: 3s;">
+                Let’s improve your resume 🚀
+            </div>
+</div>
+<button class="w-16 h-16 rounded-full soul-gradient-primary shadow-2xl flex items-center justify-center text-white btn-hover">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+</button>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low w-full px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-outline-variant/5">
+<div class="space-y-2">
+<div class="text-xl font-bold text-slate-800">Kinetic Mentor</div>
+<p class="text-sm text-slate-500">© 2024 Kinetic Mentor. Your career supernova starts here.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-sm text-slate-500 hover:text-sky-500 transition-colors" href="#">About</a>
+<a class="text-sm text-slate-500 hover:text-sky-500 transition-colors" href="#">Privacy</a>
+<a class="text-sm text-slate-500 hover:text-sky-500 transition-colors" href="#">Support</a>
+<a class="text-sm text-slate-500 hover:text-sky-500 transition-colors" href="#">Careers</a>
+</div>
+</footer>
+<script>
+        // Intersection Observer for Reveal Animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body></html>

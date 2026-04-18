@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload Your Resume - Placement Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#dfe3e6",
+                        "on-secondary-fixed-variant": "#8417a1",
+                        "background": "#f5f7f9",
+                        "error-container": "#fb5151",
+                        "secondary": "#9128ad",
+                        "surface-variant": "#d9dde0",
+                        "outline": "#747779",
+                        "surface-container": "#e5e9eb",
+                        "error": "#b31b25",
+                        "on-tertiary-container": "#4a2800",
+                        "on-surface": "#2c2f31",
+                        "primary-fixed": "#2aa7ff",
+                        "surface-dim": "#d0d5d8",
+                        "surface-tint": "#005f98",
+                        "on-primary-fixed": "#000000",
+                        "inverse-on-surface": "#9a9d9f",
+                        "primary-dim": "#005385",
+                        "tertiary-fixed-dim": "#ec8c00",
+                        "tertiary": "#874e00",
+                        "on-primary-container": "#00253f",
+                        "secondary-fixed-dim": "#f2aaff",
+                        "surface": "#f5f7f9",
+                        "tertiary-container": "#ff9800",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f5f7f9",
+                        "outline-variant": "#abadaf",
+                        "on-secondary-fixed": "#5b0072",
+                        "on-error": "#ffefee",
+                        "on-surface-variant": "#595c5e",
+                        "on-tertiary-fixed-variant": "#563000",
+                        "tertiary-dim": "#764400",
+                        "secondary-dim": "#8315a0",
+                        "secondary-container": "#f7beff",
+                        "secondary-fixed": "#f7beff",
+                        "primary": "#005f98",
+                        "on-tertiary-fixed": "#271300",
+                        "error-dim": "#9f0519",
+                        "on-error-container": "#570008",
+                        "on-primary": "#ecf3ff",
+                        "on-tertiary": "#fff0e5",
+                        "on-primary-fixed-variant": "#002e4d",
+                        "tertiary-fixed": "#ff9800",
+                        "on-secondary-container": "#7a0197",
+                        "inverse-primary": "#00a2fd",
+                        "on-secondary": "#ffeefd",
+                        "surface-container-highest": "#d9dde0",
+                        "surface-container-low": "#eef1f3",
+                        "primary-container": "#2aa7ff",
+                        "on-background": "#2c2f31",
+                        "inverse-surface": "#0b0f10",
+                        "primary-fixed-dim": "#0099f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .primary-surge {
+            background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+        }
+        .energy-glow {
+            filter: blur(120px);
+            background: radial-gradient(circle, rgba(255, 152, 0, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        .ghost-border {
+            outline: 1px solid rgba(171, 173, 175, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen relative overflow-x-hidden">
+<!-- Background Accents -->
+<div class="fixed top-[-10%] right-[-5%] w-[600px] h-[600px] energy-glow rounded-full z-0"></div>
+<div class="fixed bottom-[-10%] left-[-5%] w-[500px] h-[500px] energy-glow opacity-50 rounded-full z-0"></div>
+<!-- Navigation Shell (TopNavBar) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,163,255,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-extrabold text-slate-900 font-headline tracking-tight">
+                Placement Intelligence
+            </div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sky-600 font-bold border-b-2 border-sky-500 pb-1 font-headline" href="#">Resume</a>
+<a class="text-slate-600 hover:text-sky-600 transition-colors font-headline" href="#">Job Match</a>
+<a class="text-slate-600 hover:text-sky-600 transition-colors font-headline" href="#">Analysis</a>
+</nav>
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 rounded-full bg-surface-container-low focus:bg-surface-container-lowest transition-all w-48 text-sm outline-none border-none" placeholder="Search insights..." type="text"/>
+</div>
+<button class="primary-surge text-on-primary px-6 py-2 rounded-full font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all">
+                    Get Started
+                </button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="relative z-10 pt-32 pb-20 px-6 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
+<!-- Header Section -->
+<div class="text-center max-w-2xl mb-12">
+<span class="label-md inline-block px-4 py-1.5 mb-6 rounded-full bg-primary-container text-on-primary-container font-bold text-[11px] tracking-[0.05rem]">
+                RESUME ANALYZER
+            </span>
+<h1 class="font-headline font-extrabold text-4xl md:text-5xl text-on-surface tracking-tight mb-4 leading-tight">
+                Upload Your Resume
+            </h1>
+<p class="font-body text-on-surface-variant text-lg md:text-xl">
+                Start your journey to placement success 🚀
+            </p>
+</div>
+<!-- Central Upload Glass Card -->
+<div class="w-full max-w-2xl relative">
+<div class="glass-card ghost-border rounded-xl p-8 md:p-12 shadow-2xl overflow-hidden">
+<!-- Drag and Drop Zone -->
+<div class="relative group cursor-pointer">
+<div class="absolute inset-0 bg-surface-container-low opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"></div>
+<div class="border-2 border-dashed border-outline-variant/30 rounded-lg p-12 flex flex-col items-center justify-center transition-all duration-300 group-hover:bg-surface-container-low/50 group-hover:border-primary/40">
+<!-- Pulse Upload Icon Mockup -->
+<div class="relative mb-6">
+<div class="absolute inset-0 bg-primary/10 rounded-full scale-150 blur-xl opacity-0 group-hover:opacity-100 transition-all"></div>
+<div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center relative z-10">
+<span class="material-symbols-outlined text-on-primary-container text-4xl" data-icon="cloud_upload">cloud_upload</span>
+</div>
+</div>
+<h3 class="font-headline font-bold text-xl mb-2 text-on-surface">Drag and drop file</h3>
+<p class="font-body text-on-surface-variant text-sm mb-8 text-center max-w-sm leading-relaxed">
+                            Support for PDF, DOCX, and TXT files. Max file size: 10MB. For better results, use a standard layout.
+                        </p>
+<button class="ghost-border bg-surface-container-lowest text-primary font-bold px-8 py-3 rounded-full hover:bg-primary/5 transition-all text-sm mb-4">
+                            Choose File
+                        </button>
+</div>
+</div>
+<!-- Action Section -->
+<div class="mt-10 flex flex-col items-center gap-6">
+<button class="primary-surge text-on-primary w-full md:w-auto md:px-12 py-4 rounded-full font-bold text-lg shadow-[0_12px_40px_rgba(0,95,152,0.25)] hover:scale-[1.02] active:scale-95 transition-all">
+                        Analyze Resume
+                    </button>
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="verified_user">verified_user</span>
+<span class="text-xs font-semibold text-on-surface-variant">Private &amp; Secure</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-xs font-semibold text-on-surface-variant">AI Optimized</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Floating Geometry -->
+<div class="absolute -top-6 -right-6 w-24 h-24 bg-secondary-container/30 rounded-xl blur-2xl -z-10"></div>
+<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-tertiary-container/20 rounded-full blur-3xl -z-10"></div>
+</div>
+<!-- Stats Bento-lite Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mt-20 w-full">
+<div class="surface-container-low p-6 rounded-lg flex flex-col gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="description">description</span>
+<div class="font-headline font-bold text-lg">Parsing Pro</div>
+<p class="text-sm text-on-surface-variant">Extraction of skills and experience with 99% accuracy using advanced neural networks.</p>
+</div>
+<div class="surface-container p-6 rounded-lg flex flex-col gap-3">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="insights">insights</span>
+<div class="font-headline font-bold text-lg">Gap Analysis</div>
+<p class="text-sm text-on-surface-variant">Identify specific keywords and skills missing for your target career path immediately.</p>
+</div>
+<div class="surface-container-high p-6 rounded-lg flex flex-col gap-3">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="rocket_launch">rocket_launch</span>
+<div class="font-headline font-bold text-lg">Score Boost</div>
+<p class="text-sm text-on-surface-variant">Actionable feedback that typically increases ATS ranking by up to 40% in minutes.</p>
+</div>
+</div>
+</main>
+<!-- Suppressing BottomNavBar due to transactional focus of the "Success/Upload" journey -->
+<!-- However, providing a footer for platform continuity -->
+<footer class="mt-auto py-12 px-8 bg-surface-container-low border-none">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="font-headline font-extrabold text-on-surface-variant text-xl">
+                Placement Intelligence
+            </div>
+<div class="flex gap-8 text-on-surface-variant text-sm font-medium">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="share">share</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>
