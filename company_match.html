@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Mentor - Company Match</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "surface-dim": "#d0d5d8",
+                "primary-dim": "#005385",
+                "tertiary-fixed": "#ff9800",
+                "outline-variant": "#abadaf",
+                "on-secondary-fixed-variant": "#8417a1",
+                "on-error": "#ffefee",
+                "secondary-dim": "#8315a0",
+                "on-primary": "#ecf3ff",
+                "error": "#b31b25",
+                "surface": "#f5f7f9",
+                "primary": "#005f98",
+                "error-container": "#fb5151",
+                "primary-fixed": "#2aa7ff",
+                "on-tertiary": "#fff0e5",
+                "inverse-primary": "#00a2fd",
+                "tertiary-fixed-dim": "#ec8c00",
+                "on-secondary": "#ffeefd",
+                "inverse-on-surface": "#9a9d9f",
+                "tertiary-container": "#ff9800",
+                "secondary-container": "#f7beff",
+                "secondary-fixed-dim": "#f2aaff",
+                "secondary-fixed": "#f7beff",
+                "outline": "#747779",
+                "on-error-container": "#570008",
+                "on-tertiary-container": "#4a2800",
+                "inverse-surface": "#0b0f10",
+                "secondary": "#9128ad",
+                "surface-variant": "#d9dde0",
+                "on-secondary-fixed": "#5b0072",
+                "on-surface-variant": "#595c5e",
+                "on-primary-container": "#00253f",
+                "on-surface": "#2c2f31",
+                "on-background": "#2c2f31",
+                "surface-bright": "#f5f7f9",
+                "on-primary-fixed-variant": "#002e4d",
+                "on-primary-fixed": "#000000",
+                "surface-container-highest": "#d9dde0",
+                "surface-container-high": "#dfe3e6",
+                "surface-container-lowest": "#ffffff",
+                "primary-container": "#2aa7ff",
+                "tertiary-dim": "#764400",
+                "error-dim": "#9f0519",
+                "surface-container-low": "#eef1f3",
+                "surface-container": "#e5e9eb",
+                "on-tertiary-fixed-variant": "#563000",
+                "primary-fixed-dim": "#0099f0",
+                "surface-tint": "#005f98",
+                "on-secondary-container": "#7a0197",
+                "tertiary": "#874e00",
+                "background": "#f5f7f9",
+                "on-tertiary-fixed": "#271300"
+              },
+              "borderRadius": {
+                "DEFAULT": "1rem",
+                "lg": "2rem",
+                "xl": "3rem",
+                "full": "9999px"
+              },
+              "fontFamily": {
+                "headline": ["Plus Jakarta Sans"],
+                "body": ["Manrope"],
+                "label": ["Manrope"]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soul-gradient-primary {
+            background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+        }
+        .soul-gradient-secondary {
+            background: linear-gradient(135deg, #9128ad 0%, #f7beff 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(171, 173, 175, 0.15);
+        }
+        .floating-orb {
+            filter: blur(80px);
+            z-index: -1;
+            position: absolute;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden min-h-screen">
+<!-- Top Navigation Bar -->
+<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="text-xl font-extrabold tracking-tighter text-slate-900">Kinetic Mentor</div>
+<!-- Desktop Links -->
+<div class="hidden md:flex items-center gap-8">
+<a class="font-headline font-semibold text-sm tracking-tight text-slate-600 hover:text-sky-500 transition-all duration-300 ease-out hover:scale-105" href="#">Resume</a>
+<a class="font-headline font-semibold text-sm tracking-tight text-sky-600 border-b-2 border-sky-600 pb-1" href="#">Job Match</a>
+<a class="font-headline font-semibold text-sm tracking-tight text-slate-600 hover:text-sky-500 transition-all duration-300 ease-out hover:scale-105" href="#">Analysis</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-600 hover:scale-105 transition-all">account_circle</button>
+<button class="soul-gradient-primary text-on-primary px-6 py-2 rounded-full font-headline font-semibold text-sm transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20">
+                    Get Started
+                </button>
+</div>
+</div>
+</nav>
+<main class="relative px-6 py-12 md:py-20 max-w-7xl mx-auto flex flex-col items-center">
+<!-- Floating Background Elements -->
+<div class="floating-orb w-[400px] h-[400px] bg-primary-container/20 top-20 -left-20"></div>
+<div class="floating-orb w-[300px] h-[300px] bg-secondary-container/20 bottom-20 -right-10"></div>
+<div class="floating-orb w-[250px] h-[250px] bg-tertiary-container/10 top-1/2 left-1/2 -translate-x-1/2"></div>
+<!-- Hero Title Section -->
+<div class="text-center mb-12 space-y-4">
+<span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1 rounded-full">AI Powered Matching</span>
+<h1 class="font-headline text-4xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
+                Match With Your <span class="text-transparent bg-clip-text soul-gradient-primary">Dream Company</span>
+</h1>
+<p class="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto font-medium">
+                See how close you are to landing the role with our advanced kinetic analysis engine.
+            </p>
+</div>
+<!-- Main Glass Card Container -->
+<div class="w-full max-w-4xl glass-card rounded-xl p-8 md:p-12 shadow-2xl space-y-10 relative overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+<!-- Column 1: Resume Upload Zone -->
+<div class="space-y-4">
+<label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">description</span>
+                        Your Resume
+                    </label>
+<div class="group relative flex flex-col items-center justify-center w-full h-64 bg-surface-container-low rounded-lg transition-all duration-300 hover:bg-surface-container border-2 border-dashed border-outline-variant/30 hover:border-primary/50 cursor-pointer">
+<div class="flex flex-col items-center justify-center pt-5 pb-6">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+</div>
+<p class="mb-2 font-headline font-semibold text-on-surface text-center px-4">Click to upload or drag and drop</p>
+<p class="text-xs text-on-surface-variant font-label">PDF, DOCX (Max. 10MB)</p>
+</div>
+<input class="hidden" type="file"/>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg opacity-80">
+<span class="material-symbols-outlined text-primary-dim" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-xs font-semibold text-on-surface-variant">Last uploaded: Resume_Final_v2.pdf</span>
+</div>
+</div>
+<!-- Column 2: Job Description Area -->
+<div class="space-y-4 h-full flex flex-col">
+<label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">work_history</span>
+                        Paste job description
+                    </label>
+<div class="flex-grow">
+<textarea class="w-full h-64 p-6 bg-surface-container-low rounded-lg border-none focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all duration-300 resize-none font-body text-sm text-on-surface placeholder:text-on-surface-variant/50" placeholder="Paste the full job description text here to compare against your resume skills and experience..."></textarea>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg opacity-80 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">tips_and_updates</span>
+<span class="text-xs font-semibold text-on-surface-variant">Paste more than 100 words for best accuracy.</span>
+</div>
+</div>
+</div>
+<!-- Footer Action Section -->
+<div class="pt-8 flex flex-col items-center gap-6">
+<button class="soul-gradient-primary w-full md:w-auto px-12 py-5 rounded-full font-headline font-bold text-lg text-on-primary shadow-xl shadow-primary/30 transition-all duration-300 hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3">
+                    Analyze Match
+                    <span class="material-symbols-outlined">rocket_launch</span>
+</button>
+<p class="text-xs text-on-surface-variant font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">lock</span>
+                    Your data is encrypted and used only for the matching process.
+                </p>
+</div>
+<!-- Visual Detail -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 soul-gradient-secondary rounded-full opacity-5"></div>
+</div>
+<!-- Featured Section -->
+<div class="mt-20 w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4 hover:bg-surface-container transition-colors">
+<div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">analytics</span>
+</div>
+<h3 class="font-headline font-bold text-on-surface">Skill Gap Analysis</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Instantly identify which keywords and qualifications you're missing from the job requirements.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4 hover:bg-surface-container transition-colors">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">psychology</span>
+</div>
+<h3 class="font-headline font-bold text-on-surface">AI Coach Insights</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Receive personalized advice on how to tweak your bullet points to score higher in ATS systems.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4 hover:bg-surface-container transition-colors">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">bolt</span>
+</div>
+<h3 class="font-headline font-bold text-on-surface">Kinetic Scoring</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Get a real-time percentage score of your compatibility with the role and company culture.</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 border-t border-slate-200/20 w-full py-12 px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
+<div class="font-['Plus_Jakarta_Sans'] font-bold text-lg text-slate-900">Kinetic Mentor</div>
+<div class="flex gap-8">
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-slate-500 hover:text-sky-400 transition-colors duration-200" href="#">Privacy Policy</a>
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-slate-500 hover:text-sky-400 transition-colors duration-200" href="#">Terms of Service</a>
+<a class="font-['Manrope'] text-xs uppercase tracking-widest text-slate-500 hover:text-sky-400 transition-colors duration-200" href="#">Contact Support</a>
+</div>
+<p class="font-['Manrope'] text-xs uppercase tracking-widest text-slate-500">© 2024 Kinetic Mentor. The Guided Supernova.</p>
+</div>
+</footer>
+</body></html>
