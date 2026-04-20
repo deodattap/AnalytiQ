@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Choose Your Path | Kinetic Mentor</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "primary-fixed-dim": "#0099f0",
+                    "secondary-fixed-dim": "#f2aaff",
+                    "error-container": "#fb5151",
+                    "inverse-primary": "#00a2fd",
+                    "outline": "#747779",
+                    "on-primary": "#ecf3ff",
+                    "on-tertiary": "#fff0e5",
+                    "surface-bright": "#f5f7f9",
+                    "on-secondary-fixed-variant": "#8417a1",
+                    "on-error": "#ffefee",
+                    "surface-container-low": "#eef1f3",
+                    "tertiary-fixed-dim": "#ec8c00",
+                    "on-primary-container": "#00253f",
+                    "on-secondary": "#ffeefd",
+                    "primary": "#005f98",
+                    "surface-variant": "#d9dde0",
+                    "on-surface-variant": "#595c5e",
+                    "inverse-surface": "#0b0f10",
+                    "primary-container": "#2aa7ff",
+                    "on-tertiary-fixed-variant": "#563000",
+                    "tertiary-fixed": "#ff9800",
+                    "secondary-fixed": "#f7beff",
+                    "on-secondary-container": "#7a0197",
+                    "primary-fixed": "#2aa7ff",
+                    "error-dim": "#9f0519",
+                    "secondary": "#9128ad",
+                    "tertiary": "#874e00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#570008",
+                    "on-secondary-fixed": "#5b0072",
+                    "surface-container": "#e5e9eb",
+                    "surface-dim": "#d0d5d8",
+                    "secondary-container": "#f7beff",
+                    "on-surface": "#2c2f31",
+                    "surface-tint": "#005f98",
+                    "tertiary-container": "#ff9800",
+                    "surface-container-highest": "#d9dde0",
+                    "tertiary-dim": "#764400",
+                    "on-background": "#2c2f31",
+                    "primary-dim": "#005385",
+                    "on-tertiary-fixed": "#271300",
+                    "inverse-on-surface": "#9a9d9f",
+                    "on-tertiary-container": "#4a2800",
+                    "outline-variant": "#abadaf",
+                    "surface": "#f5f7f9",
+                    "error": "#b31b25",
+                    "on-primary-fixed": "#000000",
+                    "secondary-dim": "#8315a0",
+                    "background": "#f5f7f9",
+                    "on-primary-fixed-variant": "#002e4d",
+                    "surface-container-high": "#dfe3e6"
+                },
+                "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+                },
+                "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .soul-gradient-primary {
+        background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+    }
+    .soul-gradient-secondary {
+        background: linear-gradient(135deg, #9128ad 0%, #f7beff 100%);
+    }
+    .glass-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.6);
+    }
+    .floating-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(80px);
+        z-index: 0;
+        pointer-events: none;
+    }
+    .mode-card {
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .mode-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: inherit;
+    }
+    .mode-card.primary-card::before {
+        background: linear-gradient(135deg, rgba(0,95,152,0.06) 0%, rgba(42,167,255,0.08) 100%);
+    }
+    .mode-card.secondary-card::before {
+        background: linear-gradient(135deg, rgba(145,40,173,0.06) 0%, rgba(247,190,255,0.08) 100%);
+    }
+    .mode-card:hover::before { opacity: 1; }
+    .mode-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 32px 64px -12px rgba(0,95,152,0.18);
+    }
+    .mode-card.secondary-card:hover {
+        box-shadow: 0 32px 64px -12px rgba(145,40,173,0.18);
+    }
+    .mode-card:active { transform: translateY(-4px) scale(0.99); }
+    .icon-ring {
+        width: 72px; height: 72px;
+        border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+    }
+    .icon-ring::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 9999px;
+        background: conic-gradient(from 0deg, transparent 60%, currentColor 100%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .mode-card:hover .icon-ring::after { opacity: 0.2; }
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(0,95,152,0.08);
+        color: #005f98;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .arrow-icon {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mode-card:hover .arrow-icon { transform: translateX(6px); }
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.7s ease-out forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    .separator-line {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .separator-line::before, .separator-line::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #abadaf80, transparent);
+    }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
+    <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-extrabold tracking-tighter text-slate-900 font-headline">Kinetic Mentor</a>
+        <div class="hidden md:flex items-center gap-8 font-headline font-semibold text-sm tracking-tight">
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Resume</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Job Match</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Analysis</a>
+        </div>
+        <button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 text-sm transition-all hover:scale-105 active:scale-95">
+            Get Started
+        </button>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="relative flex-1 px-6 py-16 md:py-24 max-w-6xl mx-auto w-full flex flex-col items-center">
+
+    <!-- Floating orbs -->
+    <div class="floating-orb w-[500px] h-[500px] bg-primary-container/15 top-0 -left-32"></div>
+    <div class="floating-orb w-[400px] h-[400px] bg-secondary-container/15 bottom-0 -right-20"></div>
+    <div class="floating-orb w-[300px] h-[300px] bg-tertiary-container/10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+
+    <!-- Header -->
+    <div class="text-center mb-14 space-y-5 relative z-10 animate-in">
+        <span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1.5 rounded-full">Step 1 of 3</span>
+        <h1 class="font-headline text-4xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
+            What would you like<br class="hidden md:block"/> to <span class="text-transparent bg-clip-text soul-gradient-primary">analyze today?</span>
+        </h1>
+        <p class="text-on-surface-variant text-lg max-w-xl mx-auto font-medium leading-relaxed">
+            Choose a mode to get started. Each path gives you personalized insights to level up your placement readiness.
+        </p>
+    </div>
+
+    <!-- Mode Cards -->
+    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+
+        <!-- Resume Analysis Card -->
+        <a href="resume_upload.html" class="mode-card primary-card glass-card rounded-xl p-8 md:p-10 space-y-6 animate-in delay-2">
+            <div class="flex items-start justify-between">
+                <div class="icon-ring bg-primary/10">
+                    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1, 'wght' 500;">description</span>
+                </div>
+                <span class="step-badge">
+                    <span class="material-symbols-outlined text-[13px]">trending_up</span>
+                    Most Popular
+                </span>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="font-headline text-2xl font-extrabold text-on-surface">Resume Analysis</h2>
+                <p class="text-on-surface-variant text-sm leading-relaxed font-medium">
+                    Get a detailed score, discover missing elements, and receive personalized improvement suggestions with curated learning resources.
+                </p>
+            </div>
+
+            <ul class="space-y-2.5">
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Resume score out of 100
+                </li>
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Missing skills & sections identified
+                </li>
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Curated learning resources
+                </li>
+            </ul>
+
+            <div class="flex items-center gap-2 pt-2">
+                <span class="font-headline font-bold text-primary text-sm">Start Resume Analysis</span>
+                <span class="material-symbols-outlined text-primary arrow-icon text-[20px]">arrow_forward</span>
+            </div>
+
+            <!-- Bottom gradient accent -->
+            <div class="absolute bottom-0 left-0 right-0 h-1 soul-gradient-primary opacity-60 rounded-b-xl"></div>
+        </a>
+
+        <!-- Company Match Card -->
+        <a href="company_match.html" class="mode-card secondary-card glass-card rounded-xl p-8 md:p-10 space-y-6 animate-in delay-3">
+            <div class="flex items-start justify-between">
+                <div class="icon-ring bg-secondary/10">
+                    <span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1, 'wght' 500;">business_center</span>
+                </div>
+                <span class="font-label text-xs font-bold uppercase tracking-widest bg-secondary/8 text-secondary px-3 py-1 rounded-full" style="background:rgba(145,40,173,0.08)">Role Specific</span>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="font-headline text-2xl font-extrabold text-on-surface">Company Match</h2>
+                <p class="text-on-surface-variant text-sm leading-relaxed font-medium">
+                    Paste a job description and see exactly how your profile stacks up — with matched skills, gaps, and a targeted action plan.
+                </p>
+            </div>
+
+            <ul class="space-y-2.5">
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Match score vs job requirements
+                </li>
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Matched & missing skills breakdown
+                </li>
+                <li class="flex items-center gap-2.5 text-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Role-specific improvement plan
+                </li>
+            </ul>
+
+            <div class="flex items-center gap-2 pt-2">
+                <span class="font-headline font-bold text-secondary text-sm">Start Company Match</span>
+                <span class="material-symbols-outlined text-secondary arrow-icon text-[20px]">arrow_forward</span>
+            </div>
+
+            <!-- Bottom gradient accent -->
+            <div class="absolute bottom-0 left-0 right-0 h-1 soul-gradient-secondary opacity-60 rounded-b-xl"></div>
+        </a>
+    </div>
+
+    <!-- Or separator -->
+    <div class="separator-line w-full max-w-4xl mt-10 animate-in delay-4 relative z-10">
+        <span class="text-xs font-label text-on-surface-variant font-semibold uppercase tracking-widest">Not sure which to pick?</span>
+    </div>
+
+    <!-- Helper tip -->
+    <div class="mt-6 bg-surface-container-low rounded-xl px-6 py-4 flex items-start gap-4 max-w-4xl w-full animate-in delay-4 relative z-10">
+        <span class="material-symbols-outlined text-tertiary text-2xl mt-0.5" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+        <div>
+            <p class="text-sm font-bold text-on-surface font-headline mb-1">Quick tip</p>
+            <p class="text-sm text-on-surface-variant leading-relaxed">If you're just starting out or want a general review, go with <strong class="text-primary">Resume Analysis</strong>. If you have a specific job in mind, use <strong class="text-secondary">Company Match</strong> for targeted insights.</p>
+        </div>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-outline-variant/20 py-6 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">lock</span>
+            Your data is encrypted and never stored permanently.
+        </p>
+    </div>
+</footer>
+
+</body>
+</html>

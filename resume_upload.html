@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload Your Resume | Kinetic Mentor</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "primary-fixed-dim": "#0099f0","secondary-fixed-dim": "#f2aaff","error-container": "#fb5151",
+                    "inverse-primary": "#00a2fd","outline": "#747779","on-primary": "#ecf3ff","on-tertiary": "#fff0e5",
+                    "surface-bright": "#f5f7f9","on-secondary-fixed-variant": "#8417a1","on-error": "#ffefee",
+                    "surface-container-low": "#eef1f3","tertiary-fixed-dim": "#ec8c00","on-primary-container": "#00253f",
+                    "on-secondary": "#ffeefd","primary": "#005f98","surface-variant": "#d9dde0",
+                    "on-surface-variant": "#595c5e","inverse-surface": "#0b0f10","primary-container": "#2aa7ff",
+                    "on-tertiary-fixed-variant": "#563000","tertiary-fixed": "#ff9800","secondary-fixed": "#f7beff",
+                    "on-secondary-container": "#7a0197","primary-fixed": "#2aa7ff","error-dim": "#9f0519",
+                    "secondary": "#9128ad","tertiary": "#874e00","surface-container-lowest": "#ffffff",
+                    "on-error-container": "#570008","on-secondary-fixed": "#5b0072","surface-container": "#e5e9eb",
+                    "surface-dim": "#d0d5d8","secondary-container": "#f7beff","on-surface": "#2c2f31",
+                    "surface-tint": "#005f98","tertiary-container": "#ff9800","surface-container-highest": "#d9dde0",
+                    "tertiary-dim": "#764400","on-background": "#2c2f31","primary-dim": "#005385",
+                    "on-tertiary-fixed": "#271300","inverse-on-surface": "#9a9d9f","on-tertiary-container": "#4a2800",
+                    "outline-variant": "#abadaf","surface": "#f5f7f9","error": "#b31b25","on-primary-fixed": "#000000",
+                    "secondary-dim": "#8315a0","background": "#f5f7f9","on-primary-fixed-variant": "#002e4d",
+                    "surface-container-high": "#dfe3e6"
+                },
+                "borderRadius": { "DEFAULT": "1rem","lg": "2rem","xl": "3rem","full": "9999px" },
+                "fontFamily": { "headline": ["Plus Jakarta Sans"],"body": ["Manrope"],"label": ["Manrope"] }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .soul-gradient-primary { background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%); }
+    .glass-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.6);
+    }
+    .floating-orb { position: absolute; border-radius: 9999px; filter: blur(80px); z-index: 0; pointer-events: none; }
+    .drop-zone {
+        transition: all 0.3s ease;
+        border: 2px dashed rgba(171,173,175,0.4);
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color: rgba(0,95,152,0.5);
+        background: rgba(0,95,152,0.03);
+    }
+    .drop-zone.has-file {
+        border-color: rgba(0,95,152,0.3);
+        background: rgba(0,95,152,0.04);
+        border-style: solid;
+    }
+    .upload-icon-wrap {
+        width: 80px; height: 80px;
+        border-radius: 9999px;
+        background: rgba(0,95,152,0.08);
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .drop-zone:hover .upload-icon-wrap, .drop-zone.dragover .upload-icon-wrap {
+        transform: scale(1.12);
+        background: rgba(0,95,152,0.14);
+    }
+    .drop-zone.has-file .upload-icon-wrap { background: rgba(0,95,152,0.12); }
+    .progress-bar-track { background: rgba(0,95,152,0.1); border-radius: 9999px; overflow: hidden; height: 4px; }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(to right, #005f98, #2aa7ff);
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.7s ease-out forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    @keyframes bounceUp {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+    .bounce-idle { animation: bounceUp 2.5s ease-in-out infinite; }
+    .step-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(0,95,152,0.06); color: #005f98;
+        padding: 5px 14px; border-radius: 9999px;
+        font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .btn-analyze {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-analyze:hover { transform: scale(1.04); }
+    .btn-analyze:active { transform: scale(0.97); }
+    .btn-analyze:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+    .file-name-chip {
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(0,95,152,0.08); border-radius: 9999px;
+        padding: 6px 14px;
+        max-width: 280px;
+    }
+    .remove-btn {
+        cursor: pointer;
+        color: #747779;
+        transition: color 0.2s;
+        display: flex;
+    }
+    .remove-btn:hover { color: #b31b25; }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
+    <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-extrabold tracking-tighter text-slate-900 font-headline">Kinetic Mentor</a>
+        <div class="hidden md:flex items-center gap-8 font-headline font-semibold text-sm tracking-tight">
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Resume</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Job Match</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Analysis</a>
+        </div>
+        <button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 text-sm transition-all hover:scale-105 active:scale-95">
+            Get Started
+        </button>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="relative flex-1 px-6 py-16 md:py-20 max-w-5xl mx-auto w-full flex flex-col items-center">
+
+    <!-- Floating orbs -->
+    <div class="floating-orb w-[450px] h-[450px] bg-primary-container/15 top-0 -left-32"></div>
+    <div class="floating-orb w-[350px] h-[350px] bg-secondary-container/10 bottom-0 -right-20"></div>
+
+    <!-- Progress breadcrumb -->
+    <div class="flex items-center gap-2 mb-10 animate-in relative z-10">
+        <a href="select_mode.html" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs font-label font-semibold">
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back
+        </a>
+        <span class="text-outline-variant text-xs">·</span>
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-[10px] font-bold">1</div>
+                <span class="text-[11px] font-semibold text-on-surface-variant hidden sm:inline">Choose Mode</span>
+            </div>
+            <div class="w-8 h-px bg-outline-variant/40"></div>
+            <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full soul-gradient-primary text-on-primary flex items-center justify-center text-[10px] font-bold">2</div>
+                <span class="text-[11px] font-bold text-primary hidden sm:inline">Upload Resume</span>
+            </div>
+            <div class="w-8 h-px bg-outline-variant/40"></div>
+            <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center text-[10px] font-bold opacity-50">3</div>
+                <span class="text-[11px] font-semibold text-on-surface-variant opacity-50 hidden sm:inline">Results</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-12 space-y-4 relative z-10 animate-in delay-1">
+        <span class="step-pill">
+            <span class="material-symbols-outlined text-[13px]">description</span>
+            Resume Analysis
+        </span>
+        <h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
+            Upload your <span class="text-transparent bg-clip-text soul-gradient-primary">resume</span>
+        </h1>
+        <p class="text-on-surface-variant text-base md:text-lg max-w-lg mx-auto font-medium leading-relaxed">
+            We'll scan it instantly and give you a full breakdown with a score, gaps, and how to fix them.
+        </p>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="w-full max-w-2xl glass-card rounded-xl p-8 md:p-10 space-y-8 relative z-10 animate-in delay-2">
+
+        <!-- Drop Zone -->
+        <div id="dropZone" class="drop-zone rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer min-h-[280px] gap-5 relative"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+
+            <div class="upload-icon-wrap bounce-idle" id="uploadIconWrap">
+                <span class="material-symbols-outlined text-primary text-4xl" id="uploadIcon" style="font-variation-settings: 'FILL' 1;">upload_file</span>
+            </div>
+
+            <div class="text-center space-y-1" id="uploadText">
+                <p class="font-headline font-bold text-on-surface text-lg">Drag & drop your resume here</p>
+                <p class="text-sm text-on-surface-variant font-medium">or click to browse files</p>
+            </div>
+
+            <div id="fileChip" class="file-name-chip hidden">
+                <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">insert_drive_file</span>
+                <span class="text-sm font-bold text-on-surface truncate" id="fileName">resume.pdf</span>
+                <span class="remove-btn" onclick="removeFile(event)">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </span>
+            </div>
+
+            <div class="flex items-center gap-6 text-xs text-on-surface-variant font-label">
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">article</span> DOCX
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">storage</span> Max 10MB
+                </span>
+            </div>
+
+            <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc" onchange="handleFileSelect(event)"/>
+        </div>
+
+        <!-- Progress Bar (hidden initially) -->
+        <div id="uploadProgress" class="hidden space-y-2">
+            <div class="flex justify-between text-xs font-label font-semibold text-on-surface-variant">
+                <span>Uploading...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- Tips row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Use the latest version of your resume for best results</p>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">format_list_bulleted</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Make sure text is selectable, not scanned as an image</p>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">lock</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Your resume is never stored or shared with third parties</p>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex flex-col items-center gap-4 pt-2">
+            <button id="analyzeBtn" disabled onclick="startAnalysis()"
+                class="btn-analyze soul-gradient-primary text-on-primary font-headline font-bold text-lg px-12 py-5 rounded-full shadow-xl shadow-primary/30 flex items-center gap-3 w-full md:w-auto justify-center">
+                <span class="material-symbols-outlined">psychology</span>
+                Analyze My Resume
+            </button>
+            <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">bolt</span>
+                Results ready in under 30 seconds
+            </p>
+        </div>
+    </div>
+
+    <!-- What you'll get section -->
+    <div class="w-full max-w-2xl mt-10 relative z-10 animate-in delay-3">
+        <p class="text-center text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-5">What you'll get</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
+                <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">grade</span>
+                <p class="text-xs font-bold text-on-surface font-headline">Resume Score</p>
+            </div>
+            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
+                <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">find_in_page</span>
+                <p class="text-xs font-bold text-on-surface font-headline">Gap Analysis</p>
+            </div>
+            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
+                <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+                <p class="text-xs font-bold text-on-surface font-headline">Suggestions</p>
+            </div>
+            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
+                <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
+                <p class="text-xs font-bold text-on-surface font-headline">Resources</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-outline-variant/20 py-6 px-6 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">lock</span>
+            Your data is encrypted and never stored permanently.
+        </p>
+    </div>
+</footer>
+
+<script>
+    let uploadedFile = null;
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById('dropZone').classList.add('dragover');
+    }
+    function handleDragLeave(e) {
+        document.getElementById('dropZone').classList.remove('dragover');
+    }
+    function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById('dropZone').classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) processFile(file);
+    }
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) processFile(file);
+    }
+    function processFile(file) {
+        uploadedFile = file;
+        const zone = document.getElementById('dropZone');
+        zone.classList.add('has-file');
+        document.getElementById('uploadText').classList.add('hidden');
+        document.getElementById('uploadIconWrap').classList.remove('bounce-idle');
+        document.getElementById('uploadIcon').textContent = 'check_circle';
+        document.getElementById('uploadIcon').style.color = '#005f98';
+        document.getElementById('fileChip').classList.remove('hidden');
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('analyzeBtn').disabled = false;
+
+        // Simulate upload progress
+        let progress = 0;
+        document.getElementById('uploadProgress').classList.remove('hidden');
+        const interval = setInterval(() => {
+            progress += Math.random() * 18 + 8;
+            if (progress >= 100) { progress = 100; clearInterval(interval); }
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+        }, 120);
+    }
+    function removeFile(e) {
+        e.stopPropagation();
+        uploadedFile = null;
+        const zone = document.getElementById('dropZone');
+        zone.classList.remove('has-file');
+        document.getElementById('uploadText').classList.remove('hidden');
+        document.getElementById('uploadIconWrap').classList.add('bounce-idle');
+        document.getElementById('uploadIcon').textContent = 'upload_file';
+        document.getElementById('fileChip').classList.add('hidden');
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('progressFill').style.width = '0%';
+        document.getElementById('analyzeBtn').disabled = true;
+        document.getElementById('fileInput').value = '';
+    }
+    function startAnalysis() {
+        if (!uploadedFile) return;
+        window.location.href = 'analyze_resume.html';
+    }
+</script>
+</body>
+</html>

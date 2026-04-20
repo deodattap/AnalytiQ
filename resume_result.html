@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Your Resume Results | Kinetic Mentor</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "primary-fixed-dim": "#0099f0","secondary-fixed-dim": "#f2aaff","error-container": "#fb5151",
+                    "inverse-primary": "#00a2fd","outline": "#747779","on-primary": "#ecf3ff","on-tertiary": "#fff0e5",
+                    "surface-bright": "#f5f7f9","on-secondary-fixed-variant": "#8417a1","on-error": "#ffefee",
+                    "surface-container-low": "#eef1f3","tertiary-fixed-dim": "#ec8c00","on-primary-container": "#00253f",
+                    "on-secondary": "#ffeefd","primary": "#005f98","surface-variant": "#d9dde0",
+                    "on-surface-variant": "#595c5e","inverse-surface": "#0b0f10","primary-container": "#2aa7ff",
+                    "on-tertiary-fixed-variant": "#563000","tertiary-fixed": "#ff9800","secondary-fixed": "#f7beff",
+                    "on-secondary-container": "#7a0197","primary-fixed": "#2aa7ff","error-dim": "#9f0519",
+                    "secondary": "#9128ad","tertiary": "#874e00","surface-container-lowest": "#ffffff",
+                    "on-error-container": "#570008","on-secondary-fixed": "#5b0072","surface-container": "#e5e9eb",
+                    "surface-dim": "#d0d5d8","secondary-container": "#f7beff","on-surface": "#2c2f31",
+                    "surface-tint": "#005f98","tertiary-container": "#ff9800","surface-container-highest": "#d9dde0",
+                    "tertiary-dim": "#764400","on-background": "#2c2f31","primary-dim": "#005385",
+                    "on-tertiary-fixed": "#271300","inverse-on-surface": "#9a9d9f","on-tertiary-container": "#4a2800",
+                    "outline-variant": "#abadaf","surface": "#f5f7f9","error": "#b31b25","on-primary-fixed": "#000000",
+                    "secondary-dim": "#8315a0","background": "#f5f7f9","on-primary-fixed-variant": "#002e4d",
+                    "surface-container-high": "#dfe3e6"
+                },
+                "borderRadius": { "DEFAULT": "1rem","lg": "2rem","xl": "3rem","full": "9999px" },
+                "fontFamily": { "headline": ["Plus Jakarta Sans"],"body": ["Manrope"],"label": ["Manrope"] }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .soul-gradient-primary { background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%); }
+    .soul-gradient-secondary { background: linear-gradient(135deg, #9128ad 0%, #f7beff 100%); }
+    .soul-gradient-tertiary { background: linear-gradient(135deg, #874e00 0%, #ff9800 100%); }
+    .glass-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.6);
+    }
+    .floating-orb { position: absolute; border-radius: 9999px; filter: blur(80px); z-index: 0; pointer-events: none; }
+
+    /* Score ring */
+    .score-ring-wrap { position: relative; width: 180px; height: 180px; }
+    .score-ring-svg { transform: rotate(-90deg); }
+    .score-ring-bg { fill: none; stroke: rgba(0,95,152,0.1); stroke-width: 14; }
+    .score-ring-fill {
+        fill: none; stroke: url(#scoreGrad); stroke-width: 14;
+        stroke-linecap: round;
+        stroke-dasharray: 502;
+        stroke-dashoffset: 502;
+        transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .score-center {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .score-num {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 42px; font-weight: 800; line-height: 1;
+        background: linear-gradient(135deg, #005f98, #2aa7ff);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.7s ease-out forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    .delay-5 { animation-delay: 0.7s; }
+
+    /* Skill tags */
+    .tag-missing {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(179,27,37,0.07); color: #b31b25;
+        padding: 5px 12px; border-radius: 9999px;
+        font-size: 12px; font-weight: 600; font-family: 'Manrope', sans-serif;
+    }
+    .tag-suggest {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(145,40,173,0.07); color: #9128ad;
+        padding: 5px 12px; border-radius: 9999px;
+        font-size: 12px; font-weight: 600; font-family: 'Manrope', sans-serif;
+    }
+
+    /* Resource card */
+    .resource-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .resource-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -8px rgba(0,95,152,0.15); }
+
+    /* Section score bars */
+    .score-bar-track { background: rgba(0,95,152,0.1); border-radius: 9999px; height: 8px; overflow: hidden; flex: 1; }
+    .score-bar-fill {
+        height: 100%;
+        border-radius: 9999px;
+        width: 0;
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .accordion-content.open { max-height: 500px; }
+    .accordion-arrow { transition: transform 0.3s ease; }
+    .accordion-arrow.open { transform: rotate(180deg); }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
+    <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-extrabold tracking-tighter text-slate-900 font-headline">Kinetic Mentor</a>
+        <div class="hidden md:flex items-center gap-8 font-headline font-semibold text-sm tracking-tight">
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Resume</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Job Match</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Analysis</a>
+        </div>
+        <button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 text-sm transition-all hover:scale-105 active:scale-95">
+            Get Started
+        </button>
+    </div>
+</nav>
+
+<main class="relative px-6 py-12 md:py-16 max-w-6xl mx-auto w-full">
+
+    <!-- Floating orbs -->
+    <div class="floating-orb w-[400px] h-[400px] bg-primary-container/15 top-0 -left-32"></div>
+    <div class="floating-orb w-[300px] h-[300px] bg-secondary-container/10 top-40 -right-20"></div>
+
+    <!-- Page header -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10 animate-in">
+        <div class="space-y-2">
+            <span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1.5 rounded-full">Resume Analysis Complete</span>
+            <h1 class="font-headline text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight mt-3">
+                Here's your <span class="text-transparent bg-clip-text soul-gradient-primary">full breakdown</span>
+            </h1>
+            <p class="text-on-surface-variant text-sm md:text-base font-medium">Analyzed on <strong>April 20, 2025</strong> · Resume_Final_v3.pdf</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="resume_upload.html" class="flex items-center gap-2 px-5 py-2.5 bg-surface-container rounded-full font-headline font-semibold text-sm text-on-surface hover:bg-surface-container-high transition-colors">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+                Re-analyze
+            </a>
+            <a href="select_mode.html" class="soul-gradient-primary flex items-center gap-2 px-5 py-2.5 rounded-full font-headline font-bold text-sm text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                <span class="material-symbols-outlined text-[18px]">business_center</span>
+                Company Match
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Row: Score + Section Scores -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 relative z-10">
+
+        <!-- Main Score Ring -->
+        <div class="glass-card rounded-xl p-8 flex flex-col items-center justify-center space-y-4 animate-in delay-1">
+            <p class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Overall Score</p>
+            <div class="score-ring-wrap">
+                <svg class="score-ring-svg" width="180" height="180" viewBox="0 0 180 180">
+                    <defs>
+                        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#005f98"/>
+                            <stop offset="100%" stop-color="#2aa7ff"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="score-ring-bg" cx="90" cy="90" r="80"/>
+                    <circle class="score-ring-fill" id="scoreRing" cx="90" cy="90" r="80"/>
+                </svg>
+                <div class="score-center">
+                    <span class="score-num" id="scoreDisplay">0</span>
+                    <span class="text-xs font-bold text-on-surface-variant font-label">/100</span>
+                </div>
+            </div>
+            <div class="text-center space-y-1">
+                <p class="font-headline font-bold text-on-surface">Good Foundation</p>
+                <p class="text-xs text-on-surface-variant font-medium">Top 35% of resumes reviewed</p>
+            </div>
+        </div>
+
+        <!-- Section Scores -->
+        <div class="md:col-span-2 glass-card rounded-xl p-8 space-y-5 animate-in delay-2">
+            <p class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Section Breakdown</p>
+            <div class="space-y-4" id="sectionBars">
+                <!-- JS will render these -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Row: Missing Elements + Suggestions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 relative z-10">
+
+        <!-- Missing Elements -->
+        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+                </div>
+                <div>
+                    <p class="font-headline font-bold text-on-surface">Missing Elements</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Add these to boost your score</p>
+                </div>
+            </div>
+
+            <!-- Missing sections -->
+            <div class="space-y-3" id="missingSections">
+                <!-- JS rendered -->
+            </div>
+
+            <!-- Missing skills -->
+            <div>
+                <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label mb-3">Missing Skills</p>
+                <div class="flex flex-wrap gap-2" id="missingSkills"></div>
+            </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+                </div>
+                <div>
+                    <p class="font-headline font-bold text-on-surface">Improvement Suggestions</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Quick wins to improve your resume</p>
+                </div>
+            </div>
+            <div class="space-y-3" id="suggestions"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Row: Learning Resources -->
+    <div class="glass-card rounded-xl p-8 space-y-6 relative z-10 animate-in delay-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
+                </div>
+                <div>
+                    <p class="font-headline font-bold text-on-surface">Learning Resources</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Curated content to fill your skill gaps</p>
+                </div>
+            </div>
+            <span class="font-label text-xs font-bold text-on-surface-variant">4 resources</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="resources"></div>
+    </div>
+
+    <!-- CTA bottom strip -->
+    <div class="mt-8 soul-gradient-primary rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 overflow-hidden animate-in delay-5">
+        <div class="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full"></div>
+        <div class="space-y-1 text-center md:text-left">
+            <p class="font-headline font-extrabold text-on-primary text-xl md:text-2xl">Ready to apply for a specific role?</p>
+            <p class="text-on-primary/75 text-sm font-medium">Use Company Match to see exactly how your profile stacks up.</p>
+        </div>
+        <a href="company_match.html" class="shrink-0 bg-white text-primary font-headline font-bold px-8 py-4 rounded-full shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+            <span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+            Try Company Match
+        </a>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-outline-variant/20 py-6 px-6 mt-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">lock</span>
+            Your data is encrypted and never stored permanently.
+        </p>
+    </div>
+</footer>
+
+<script>
+// --- DATA ---
+const score = 72;
+const sections = [
+    { label: 'Work Experience', score: 85, color: 'soul-gradient-primary' },
+    { label: 'Skills & Technologies', score: 60, color: 'soul-gradient-secondary' },
+    { label: 'Education', score: 90, color: 'soul-gradient-primary' },
+    { label: 'Projects', score: 55, color: 'soul-gradient-tertiary' },
+    { label: 'Summary / Objective', score: 40, color: 'soul-gradient-secondary' },
+];
+const missingSections = [
+    { icon: 'science', label: 'Projects Section', impact: 'High Impact', desc: 'Add 2–3 relevant projects to demonstrate practical skills.' },
+    { icon: 'workspace_premium', label: 'Certifications', impact: 'Medium Impact', desc: 'List relevant certifications (AWS, Google, etc.) to stand out.' },
+    { icon: 'badge', label: 'Summary Statement', impact: 'Medium Impact', desc: 'A 2–3 line professional summary greatly improves first impressions.' },
+];
+const missingSkills = ['Docker', 'Kubernetes', 'SQL', 'REST APIs', 'System Design', 'CI/CD'];
+const suggestions = [
+    { icon: 'format_list_numbered', text: 'Quantify your achievements (e.g., "Reduced load time by 40%") to make experience entries more compelling.' },
+    { icon: 'link', text: 'Add a link to your GitHub or portfolio directly in the header of your resume.' },
+    { icon: 'psychology', text: 'Replace generic phrases like "team player" with specific examples of collaboration.' },
+    { icon: 'tune', text: 'Tailor the skills section to match the keywords in job descriptions you\'re targeting.' },
+];
+const resources = [
+    { icon: 'play_circle', type: 'Video', title: 'Resume Writing Masterclass', source: 'YouTube', color: 'bg-error/10 text-error', href: '#' },
+    { icon: 'article', type: 'Article', title: 'How to List Projects on a Resume', source: 'Medium', color: 'bg-primary/10 text-primary', href: '#' },
+    { icon: 'school', type: 'Course', title: 'Docker for Beginners', source: 'Udemy', color: 'bg-secondary/10 text-secondary', href: '#' },
+    { icon: 'play_circle', type: 'Video', title: 'System Design Interview Prep', source: 'YouTube', color: 'bg-tertiary/10 text-tertiary', href: '#' },
+];
+
+// --- RENDER ---
+window.addEventListener('DOMContentLoaded', () => {
+    // Score ring animation
+    setTimeout(() => {
+        const ring = document.getElementById('scoreRing');
+        const circumference = 2 * Math.PI * 80;
+        const offset = circumference * (1 - score / 100);
+        ring.style.strokeDashoffset = offset;
+        // Count up
+        let current = 0;
+        const step = score / 60;
+        const counter = setInterval(() => {
+            current = Math.min(current + step, score);
+            document.getElementById('scoreDisplay').textContent = Math.round(current);
+            if (current >= score) clearInterval(counter);
+        }, 25);
+    }, 400);
+
+    // Section bars
+    const sbContainer = document.getElementById('sectionBars');
+    sections.forEach((s, i) => {
+        sbContainer.innerHTML += `
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-on-surface-variant font-label w-36 shrink-0">${s.label}</span>
+            <div class="score-bar-track">
+                <div class="score-bar-fill ${s.color}" id="bar${i}"></div>
+            </div>
+            <span class="text-xs font-bold text-on-surface font-headline w-8 text-right">${s.score}</span>
+        </div>`;
+    });
+    setTimeout(() => {
+        sections.forEach((s, i) => {
+            document.getElementById('bar' + i).style.width = s.score + '%';
+        });
+    }, 600);
+
+    // Missing sections
+    const msContainer = document.getElementById('missingSections');
+    missingSections.forEach(m => {
+        const impactColor = m.impact === 'High Impact' ? 'bg-error/10 text-error' : 'bg-tertiary/10 text-tertiary';
+        msContainer.innerHTML += `
+        <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-error text-[16px]">${m.icon}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <p class="text-sm font-bold text-on-surface font-headline">${m.label}</p>
+                    <span class="text-[10px] font-bold ${impactColor} px-2 py-0.5 rounded-full uppercase tracking-wide">${m.impact}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed mt-0.5">${m.desc}</p>
+            </div>
+        </div>`;
+    });
+
+    // Missing skills
+    const skillsContainer = document.getElementById('missingSkills');
+    missingSkills.forEach(s => {
+        skillsContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${s}</span>`;
+    });
+
+    // Suggestions
+    const sugContainer = document.getElementById('suggestions');
+    suggestions.forEach((s, i) => {
+        sugContainer.innerHTML += `
+        <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+            <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-secondary text-[15px]">${s.icon}</span>
+            </div>
+            <p class="text-sm text-on-surface-variant leading-relaxed font-medium">${s.text}</p>
+        </div>`;
+    });
+
+    // Resources
+    const resContainer = document.getElementById('resources');
+    resources.forEach(r => {
+        resContainer.innerHTML += `
+        <a href="${r.href}" class="resource-card bg-surface-container-low rounded-xl p-5 space-y-3 block">
+            <div class="flex items-center justify-between">
+                <div class="w-9 h-9 rounded-full ${r.color} bg-opacity-10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">${r.icon}</span>
+                </div>
+                <span class="text-[10px] font-bold ${r.color} bg-opacity-10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-current border-opacity-20">${r.type}</span>
+            </div>
+            <div>
+                <p class="font-headline font-bold text-sm text-on-surface leading-snug">${r.title}</p>
+                <p class="text-xs text-on-surface-variant mt-1 font-medium">${r.source}</p>
+            </div>
+            <div class="flex items-center gap-1 text-primary text-xs font-bold font-headline">
+                View resource <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </div>
+        </a>`;
+    });
+});
+</script>
+</body>
+</html>
