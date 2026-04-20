@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Upload Your Resume | Kinetic Mentor</title>
+<title>Company Match | Kinetic Mentor</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -63,7 +63,7 @@
         border-style: solid;
     }
     .upload-icon-wrap {
-        width: 80px; height: 80px;
+        width: 64px; height: 64px;
         border-radius: 9999px;
         background: rgba(0,95,152,0.08);
         display: flex; align-items: center; justify-content: center;
@@ -73,14 +73,13 @@
         transform: scale(1.12);
         background: rgba(0,95,152,0.14);
     }
-    .drop-zone.has-file .upload-icon-wrap { background: rgba(0,95,152,0.12); }
-    .progress-bar-track { background: rgba(0,95,152,0.1); border-radius: 9999px; overflow: hidden; height: 4px; }
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(to right, #005f98, #2aa7ff);
-        border-radius: 9999px;
-        transition: width 0.4s ease;
+    .file-name-chip {
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(0,95,152,0.08); border-radius: 9999px;
+        padding: 6px 14px; max-width: 260px;
     }
+    .remove-btn { cursor: pointer; color: #747779; transition: color 0.2s; display: flex; }
+    .remove-btn:hover { color: #b31b25; }
     @keyframes fadeSlideUp {
         from { opacity: 0; transform: translateY(24px); }
         to { opacity: 1; transform: translateY(0); }
@@ -89,36 +88,28 @@
     .delay-1 { animation-delay: 0.1s; }
     .delay-2 { animation-delay: 0.25s; }
     .delay-3 { animation-delay: 0.4s; }
-    @keyframes bounceUp {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
-    }
-    .bounce-idle { animation: bounceUp 2.5s ease-in-out infinite; }
+    .btn-analyze { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .btn-analyze:hover { transform: scale(1.04); }
+    .btn-analyze:active { transform: scale(0.97); }
+    .btn-analyze:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
     .step-pill {
         display: inline-flex; align-items: center; gap: 8px;
         background: rgba(0,95,152,0.06); color: #005f98;
         padding: 5px 14px; border-radius: 9999px;
         font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
     }
-    .btn-analyze {
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    .progress-bar-track { background: rgba(0,95,152,0.1); border-radius: 9999px; overflow: hidden; height: 4px; }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(to right, #005f98, #2aa7ff);
+        border-radius: 9999px;
+        transition: width 0.4s ease;
     }
-    .btn-analyze:hover { transform: scale(1.04); }
-    .btn-analyze:active { transform: scale(0.97); }
-    .btn-analyze:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
-    .file-name-chip {
-        display: flex; align-items: center; gap: 8px;
-        background: rgba(0,95,152,0.08); border-radius: 9999px;
-        padding: 6px 14px;
-        max-width: 280px;
+    @keyframes bounceUp {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
     }
-    .remove-btn {
-        cursor: pointer;
-        color: #747779;
-        transition: color 0.2s;
-        display: flex;
-    }
-    .remove-btn:hover { color: #b31b25; }
+    .bounce-idle { animation: bounceUp 2.5s ease-in-out infinite; }
 </style>
 </head>
 <body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
@@ -147,7 +138,7 @@
 
     <!-- Progress breadcrumb -->
     <div class="flex items-center gap-2 mb-10 animate-in relative z-10">
-        <a href="select_mode.html" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs font-label font-semibold">
+        <a href="analysis.html" class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors text-xs font-label font-semibold">
             <span class="material-symbols-outlined text-[16px]">arrow_back</span>
             Back
         </a>
@@ -160,7 +151,7 @@
             <div class="w-8 h-px bg-outline-variant/40"></div>
             <div class="flex items-center gap-1.5">
                 <div class="w-5 h-5 rounded-full soul-gradient-primary text-on-primary flex items-center justify-center text-[10px] font-bold">2</div>
-                <span class="text-[11px] font-bold text-primary hidden sm:inline">Upload Resume</span>
+                <span class="text-[11px] font-bold text-primary hidden sm:inline">Job Requirements</span>
             </div>
             <div class="w-8 h-px bg-outline-variant/40"></div>
             <div class="flex items-center gap-1.5">
@@ -173,83 +164,82 @@
     <!-- Header -->
     <div class="text-center mb-12 space-y-4 relative z-10 animate-in delay-1">
         <span class="step-pill">
-            <span class="material-symbols-outlined text-[13px]">description</span>
-            Resume Analysis
+            <span class="material-symbols-outlined text-[13px]">business_center</span>
+            Company Match
         </span>
         <h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-            Upload your <span class="text-transparent bg-clip-text soul-gradient-primary">resume</span>
+            Match with your <span class="text-transparent bg-clip-text soul-gradient-primary">dream role</span>
         </h1>
         <p class="text-on-surface-variant text-base md:text-lg max-w-lg mx-auto font-medium leading-relaxed">
-            We'll scan it instantly and give you a full breakdown with a score, gaps, and how to fix them.
+            Upload your resume and paste the job description. We'll show you exactly how well you match.
         </p>
     </div>
 
-    <!-- Upload Card -->
-    <div class="w-full max-w-2xl glass-card rounded-xl p-8 md:p-10 space-y-8 relative z-10 animate-in delay-2">
+    <!-- Input Card -->
+    <div class="w-full max-w-3xl glass-card rounded-xl p-8 md:p-10 space-y-8 relative z-10 animate-in delay-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
-        <!-- Drop Zone -->
-        <div id="dropZone" class="drop-zone rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer min-h-[280px] gap-5 relative"
-             onclick="document.getElementById('fileInput').click()"
-             ondragover="handleDragOver(event)"
-             ondragleave="handleDragLeave(event)"
-             ondrop="handleDrop(event)">
+            <!-- Column 1: Resume Upload -->
+            <div class="space-y-4">
+                <label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">description</span>
+                    Your Resume
+                </label>
+                <div id="dropZone"
+                     class="drop-zone rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer min-h-[220px] gap-4 relative"
+                     onclick="document.getElementById('fileInput').click()"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)">
 
-            <div class="upload-icon-wrap bounce-idle" id="uploadIconWrap">
-                <span class="material-symbols-outlined text-primary text-4xl" id="uploadIcon" style="font-variation-settings: 'FILL' 1;">upload_file</span>
+                    <div class="upload-icon-wrap bounce-idle" id="uploadIconWrap">
+                        <span class="material-symbols-outlined text-primary text-3xl" id="uploadIcon" style="font-variation-settings: 'FILL' 1;">upload_file</span>
+                    </div>
+
+                    <div class="text-center space-y-1" id="uploadText">
+                        <p class="font-headline font-bold text-on-surface text-base">Drag &amp; drop or click to upload</p>
+                        <p class="text-xs text-on-surface-variant font-medium">PDF, DOCX · Max 10MB</p>
+                    </div>
+
+                    <div id="fileChip" class="file-name-chip hidden">
+                        <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">insert_drive_file</span>
+                        <span class="text-sm font-bold text-on-surface truncate" id="fileName">resume.pdf</span>
+                        <span class="remove-btn" onclick="removeFile(event)">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </span>
+                    </div>
+
+                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc" onchange="handleFileSelect(event)"/>
+                </div>
+
+                <!-- Upload progress -->
+                <div id="uploadProgress" class="hidden space-y-1">
+                    <div class="flex justify-between text-xs font-label font-semibold text-on-surface-variant">
+                        <span>Uploading...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="text-center space-y-1" id="uploadText">
-                <p class="font-headline font-bold text-on-surface text-lg">Drag & drop your resume here</p>
-                <p class="text-sm text-on-surface-variant font-medium">or click to browse files</p>
-            </div>
-
-            <div id="fileChip" class="file-name-chip hidden">
-                <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">insert_drive_file</span>
-                <span class="text-sm font-bold text-on-surface truncate" id="fileName">resume.pdf</span>
-                <span class="remove-btn" onclick="removeFile(event)">
-                    <span class="material-symbols-outlined text-[18px]">close</span>
-                </span>
-            </div>
-
-            <div class="flex items-center gap-6 text-xs text-on-surface-variant font-label">
-                <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> PDF
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">article</span> DOCX
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">storage</span> Max 10MB
-                </span>
-            </div>
-
-            <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc" onchange="handleFileSelect(event)"/>
-        </div>
-
-        <!-- Progress Bar (hidden initially) -->
-        <div id="uploadProgress" class="hidden space-y-2">
-            <div class="flex justify-between text-xs font-label font-semibold text-on-surface-variant">
-                <span>Uploading...</span>
-                <span id="progressPercent">0%</span>
-            </div>
-            <div class="progress-bar-track">
-                <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-            </div>
-        </div>
-
-        <!-- Tips row -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
-                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
-                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Use the latest version of your resume for best results</p>
-            </div>
-            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
-                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">format_list_bulleted</span>
-                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Make sure text is selectable, not scanned as an image</p>
-            </div>
-            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
-                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">lock</span>
-                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Your resume is never stored or shared with third parties</p>
+            <!-- Column 2: Job Description -->
+            <div class="space-y-4 flex flex-col h-full">
+                <label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">work_history</span>
+                    Job Description
+                </label>
+                <div class="flex-grow">
+                    <textarea id="jobDesc"
+                        class="w-full h-full min-h-[220px] p-5 bg-surface-container-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all duration-300 resize-none font-body text-sm text-on-surface placeholder:text-on-surface-variant/50 outline-none"
+                        placeholder="Paste the full job description text here to compare against your resume skills and experience..."
+                        oninput="checkForm()"></textarea>
+                </div>
+                <div class="p-3 bg-surface-container-low rounded-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
+                    <span class="text-xs font-semibold text-on-surface-variant">Paste more than 100 words for best accuracy.</span>
+                </div>
             </div>
         </div>
 
@@ -257,8 +247,8 @@
         <div class="flex flex-col items-center gap-4 pt-2">
             <button id="analyzeBtn" disabled onclick="startAnalysis()"
                 class="btn-analyze soul-gradient-primary text-on-primary font-headline font-bold text-lg px-12 py-5 rounded-full shadow-xl shadow-primary/30 flex items-center gap-3 w-full md:w-auto justify-center">
-                <span class="material-symbols-outlined">psychology</span>
-                Analyze My Resume
+                <span class="material-symbols-outlined">hub</span>
+                Analyze Match
             </button>
             <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">bolt</span>
@@ -267,25 +257,43 @@
         </div>
     </div>
 
-    <!-- What you'll get section -->
-    <div class="w-full max-w-2xl mt-10 relative z-10 animate-in delay-3">
+    <!-- Tips row -->
+    <div class="w-full max-w-3xl mt-6 relative z-10 animate-in delay-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Use the latest version of your resume for best results</p>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">format_list_bulleted</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Copy the full job description including requirements</p>
+            </div>
+            <div class="flex items-start gap-2.5 p-3 bg-surface-container-low rounded-lg">
+                <span class="material-symbols-outlined text-primary text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">lock</span>
+                <p class="text-xs text-on-surface-variant font-medium leading-relaxed">Your resume is never stored or shared with third parties</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- What you'll get -->
+    <div class="w-full max-w-3xl mt-10 relative z-10 animate-in delay-3">
         <p class="text-center text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-5">What you'll get</p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
                 <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">grade</span>
-                <p class="text-xs font-bold text-on-surface font-headline">Resume Score</p>
+                <p class="text-xs font-bold text-on-surface font-headline">Match Score</p>
+            </div>
+            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
+                <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                <p class="text-xs font-bold text-on-surface font-headline">Matched Skills</p>
             </div>
             <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
                 <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">find_in_page</span>
-                <p class="text-xs font-bold text-on-surface font-headline">Gap Analysis</p>
+                <p class="text-xs font-bold text-on-surface font-headline">Skill Gaps</p>
             </div>
             <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
-                <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+                <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
                 <p class="text-xs font-bold text-on-surface font-headline">Suggestions</p>
-            </div>
-            <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
-                <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
-                <p class="text-xs font-bold text-on-surface font-headline">Resources</p>
             </div>
         </div>
     </div>
@@ -333,7 +341,6 @@
         document.getElementById('uploadIcon').style.color = '#005f98';
         document.getElementById('fileChip').classList.remove('hidden');
         document.getElementById('fileName').textContent = file.name;
-        document.getElementById('analyzeBtn').disabled = false;
 
         // Simulate upload progress
         let progress = 0;
@@ -344,6 +351,8 @@
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
         }, 120);
+
+        checkForm();
     }
     function removeFile(e) {
         e.stopPropagation();
@@ -356,15 +365,20 @@
         document.getElementById('fileChip').classList.add('hidden');
         document.getElementById('uploadProgress').classList.add('hidden');
         document.getElementById('progressFill').style.width = '0%';
-        document.getElementById('analyzeBtn').disabled = true;
         document.getElementById('fileInput').value = '';
+        checkForm();
+    }
+    function checkForm() {
+        const hasFile = uploadedFile !== null;
+        const hasDesc = document.getElementById('jobDesc').value.trim().length > 20;
+        document.getElementById('analyzeBtn').disabled = !(hasFile && hasDesc);
     }
     function startAnalysis() {
-        if (!uploadedFile) return;
-        // Store file info for result page
-        sessionStorage.setItem('resumeFileName', uploadedFile.name);
-        sessionStorage.setItem('resumeUploaded', 'true');
-        window.location.href = 'resume_loading.html';
+        const jobDesc = document.getElementById('jobDesc').value.trim();
+        // Store inputs for result page keyword matching
+        sessionStorage.setItem('jobDescription', jobDesc);
+        if (uploadedFile) sessionStorage.setItem('resumeFileName', uploadedFile.name);
+        window.location.href = 'company_loading.html';
     }
 </script>
 </body>

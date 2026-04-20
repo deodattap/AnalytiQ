@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analyzing Your Resume... | Kinetic Mentor</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "primary-fixed-dim": "#0099f0","secondary-fixed-dim": "#f2aaff","error-container": "#fb5151",
+                    "inverse-primary": "#00a2fd","outline": "#747779","on-primary": "#ecf3ff","on-tertiary": "#fff0e5",
+                    "surface-bright": "#f5f7f9","on-secondary-fixed-variant": "#8417a1","on-error": "#ffefee",
+                    "surface-container-low": "#eef1f3","tertiary-fixed-dim": "#ec8c00","on-primary-container": "#00253f",
+                    "on-secondary": "#ffeefd","primary": "#005f98","surface-variant": "#d9dde0",
+                    "on-surface-variant": "#595c5e","inverse-surface": "#0b0f10","primary-container": "#2aa7ff",
+                    "on-tertiary-fixed-variant": "#563000","tertiary-fixed": "#ff9800","secondary-fixed": "#f7beff",
+                    "on-secondary-container": "#7a0197","primary-fixed": "#2aa7ff","error-dim": "#9f0519",
+                    "secondary": "#9128ad","tertiary": "#874e00","surface-container-lowest": "#ffffff",
+                    "on-error-container": "#570008","on-secondary-fixed": "#5b0072","surface-container": "#e5e9eb",
+                    "surface-dim": "#d0d5d8","secondary-container": "#f7beff","on-surface": "#2c2f31",
+                    "surface-tint": "#005f98","tertiary-container": "#ff9800","surface-container-highest": "#d9dde0",
+                    "tertiary-dim": "#764400","on-background": "#2c2f31","primary-dim": "#005385",
+                    "on-tertiary-fixed": "#271300","inverse-on-surface": "#9a9d9f","on-tertiary-container": "#4a2800",
+                    "outline-variant": "#abadaf","surface": "#f5f7f9","error": "#b31b25","on-primary-fixed": "#000000",
+                    "secondary-dim": "#8315a0","background": "#f5f7f9","on-primary-fixed-variant": "#002e4d",
+                    "surface-container-high": "#dfe3e6"
+                },
+                "borderRadius": { "DEFAULT": "1rem","lg": "2rem","xl": "3rem","full": "9999px" },
+                "fontFamily": { "headline": ["Plus Jakarta Sans"],"body": ["Manrope"],"label": ["Manrope"] }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .soul-gradient-primary { background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%); }
+    .glass-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.6);
+    }
+    .floating-orb { position: absolute; border-radius: 9999px; filter: blur(80px); z-index: 0; pointer-events: none; }
+    .progress-ring-gradient {
+        background: conic-gradient(from 0deg, #005f98, #9128ad, #f7beff, #2aa7ff, #005f98);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.7s ease-out forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .step-done { opacity: 1; }
+    .step-active { opacity: 1; }
+    .step-pending { opacity: 0.4; }
+    @keyframes progressCount {
+        from { content: "0%"; }
+        to { content: "100%"; }
+    }
+    .progress-bar-track { background: rgba(0,95,152,0.1); border-radius: 9999px; overflow: hidden; height: 6px; }
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(to right, #005f98, #2aa7ff);
+        border-radius: 9999px;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
+    <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        <a href="index.html" class="text-xl font-extrabold tracking-tighter text-slate-900 font-headline">Kinetic Mentor</a>
+        <div class="hidden md:flex items-center gap-8 font-headline font-semibold text-sm tracking-tight">
+            <a class="text-sky-600 border-b-2 border-sky-600 pb-1" href="#">Resume</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Job Match</a>
+            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Analysis</a>
+        </div>
+        <button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 text-sm transition-all hover:scale-105 active:scale-95">
+            Get Started
+        </button>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="flex-grow relative flex items-center justify-center overflow-hidden px-6 py-12">
+
+    <!-- Background Orbs -->
+    <div class="floating-orb w-[400px] h-[400px] bg-primary-container/20 top-0 -left-32"></div>
+    <div class="floating-orb w-[300px] h-[300px] bg-secondary-container/15 bottom-0 -right-20"></div>
+
+    <!-- Central Loading Container -->
+    <div class="relative z-10 w-full max-w-2xl text-center animate-in">
+
+        <!-- Glass Analysis Card -->
+        <div class="glass-card rounded-xl shadow-[0_32px_64px_-12px_rgba(0,95,152,0.12)] p-10 md:p-12 relative overflow-hidden">
+            <span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1.5 rounded-full">Resume Analysis</span>
+            <h1 class="font-headline font-bold text-3xl md:text-4xl text-on-surface mt-6 mb-10 tracking-tight">Analyzing Your Resume...</h1>
+
+            <!-- Circular Progress -->
+            <div class="relative w-48 h-48 mx-auto mb-10">
+                <!-- Ring Background -->
+                <div class="absolute inset-0 rounded-full border-[12px] border-surface-container-high"></div>
+                <!-- Animated Gradient Ring -->
+                <div class="absolute inset-0 rounded-full border-[12px] border-transparent progress-ring-gradient opacity-80"
+                     style="mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: spin 2s linear infinite;"></div>
+                <!-- Percentage Counter -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="font-headline font-extrabold text-5xl text-primary tracking-tighter" id="pctDisplay">0%</span>
+                    <span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-1">Progress</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-track mb-10 mx-auto max-w-xs">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+
+            <!-- Dynamic Messaging Stack -->
+            <div class="space-y-5 max-w-sm mx-auto text-left">
+                <div class="flex items-center gap-4 step-done" id="step1">
+                    <div class="w-8 h-8 rounded-full soul-gradient-primary flex items-center justify-center text-white shrink-0">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+                    </div>
+                    <p class="font-body text-on-surface font-medium">Scanning your skills...</p>
+                </div>
+                <div class="flex items-center gap-4 step-pending" id="step2">
+                    <div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0 relative" id="step2Icon">
+                        <span class="material-symbols-outlined text-sm">search</span>
+                    </div>
+                    <p class="font-body text-on-surface font-bold text-lg">Analyzing resume...</p>
+                </div>
+                <div class="flex items-center gap-4 step-pending" id="step3">
+                    <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
+                        <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                    </div>
+                    <p class="font-body text-on-surface-variant font-medium">Processing data...</p>
+                </div>
+            </div>
+
+            <!-- Decorative corner accents -->
+            <div class="absolute -top-12 -right-12 w-24 h-24 bg-secondary/10 rounded-full"></div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/5 rounded-full"></div>
+        </div>
+
+        <!-- Helpful Tip -->
+        <div class="mt-8 animate-in delay-1">
+            <p class="font-label text-xs uppercase tracking-widest text-primary font-bold mb-2">Pro Tip</p>
+            <p class="font-body text-on-surface-variant text-sm max-w-md mx-auto italic">
+                "Highlighting quantifiable achievements (like 'increased sales by 20%') significantly improves your matching score."
+            </p>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-outline-variant/20 py-6 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">lock</span>
+            Your data is encrypted and never stored permanently.
+        </p>
+    </div>
+</footer>
+
+<script>
+    let pct = 0;
+    const pctDisplay = document.getElementById('pctDisplay');
+    const progressBar = document.getElementById('progressBar');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step2Icon = document.getElementById('step2Icon');
+
+    // Animate progress
+    const interval = setInterval(() => {
+        pct += Math.random() * 3 + 1.5;
+        if (pct >= 100) {
+            pct = 100;
+            clearInterval(interval);
+            // Navigate after short delay
+            setTimeout(() => { window.location.href = 'resume_result.html'; }, 600);
+        }
+        pctDisplay.textContent = Math.round(pct) + '%';
+        progressBar.style.width = pct + '%';
+
+        // Step transitions
+        if (pct >= 30 && step2.classList.contains('step-pending')) {
+            step2.classList.remove('step-pending');
+            step2.classList.add('step-active');
+            step2Icon.innerHTML = '<div class="absolute inset-0 rounded-full border-2 border-primary border-t-transparent" style="animation: spin 0.8s linear infinite;"></div><span class="material-symbols-outlined text-sm">search</span>';
+        }
+        if (pct >= 65 && step3.classList.contains('step-pending')) {
+            step3.classList.remove('step-pending');
+            step3.classList.add('step-active');
+        }
+    }, 80);
+</script>
+</body>
+</html>

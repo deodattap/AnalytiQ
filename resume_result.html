@@ -157,7 +157,7 @@
                 <span class="material-symbols-outlined text-[18px]">refresh</span>
                 Re-analyze
             </a>
-            <a href="select_mode.html" class="soul-gradient-primary flex items-center gap-2 px-5 py-2.5 rounded-full font-headline font-bold text-sm text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+            <a href="company_input.html" class="soul-gradient-primary flex items-center gap-2 px-5 py-2.5 rounded-full font-headline font-bold text-sm text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-all">
                 <span class="material-symbols-outlined text-[18px]">business_center</span>
                 Company Match
             </a>
@@ -268,7 +268,7 @@
             <p class="font-headline font-extrabold text-on-primary text-xl md:text-2xl">Ready to apply for a specific role?</p>
             <p class="text-on-primary/75 text-sm font-medium">Use Company Match to see exactly how your profile stacks up.</p>
         </div>
-        <a href="company_match.html" class="shrink-0 bg-white text-primary font-headline font-bold px-8 py-4 rounded-full shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
+        <a href="company_input.html" class="shrink-0 bg-white text-primary font-headline font-bold px-8 py-4 rounded-full shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
             <span class="material-symbols-outlined text-[20px]">rocket_launch</span>
             Try Company Match
         </a>
@@ -288,14 +288,49 @@
 </footer>
 
 <script>
-// --- DATA ---
-const score = 72;
+// --- DATA (reads from sessionStorage where available) ---
+const fileName = sessionStorage.getItem('resumeFileName') || 'Resume_Final_v3.pdf';
+
+// Generate a deterministic score from the filename (consistent for same file)
+function hashScore(str, min, max) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffffffff;
+    return min + (Math.abs(h) % (max - min + 1));
+}
+const score = hashScore(fileName, 62, 88);
+
+// Update the meta line with real filename
+document.addEventListener('DOMContentLoaded', () => {
+    const meta = document.querySelector('p.text-on-surface-variant.font-medium');
+    if (meta) {
+        const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        meta.innerHTML = `Analyzed on <strong>${today}</strong> · ${fileName}`;
+    }
+    // Update score label based on value
+    const label = document.querySelector('.score-center + div p.font-bold') ||
+                  document.querySelector('[class*="score-center"] ~ div p.font-bold');
+    const scoreLabel = score >= 80 ? 'Great Profile!' : score >= 65 ? 'Good Foundation' : 'Needs Work';
+    const scoreSub = score >= 80 ? 'Top 15% of resumes reviewed'
+                   : score >= 65 ? 'Top 35% of resumes reviewed'
+                   : 'Room to improve — follow the suggestions below';
+    // Try to find and update the label nodes inside the score card
+    const scoreCard = document.getElementById('scoreDisplay');
+    if (scoreCard) {
+        const cardParent = scoreCard.closest('.glass-card');
+        if (cardParent) {
+            const ps = cardParent.querySelectorAll('p');
+            if (ps[0]) ps[0].textContent = scoreLabel;
+            if (ps[1]) ps[1].textContent = scoreSub;
+        }
+    }
+});
+
 const sections = [
-    { label: 'Work Experience', score: 85, color: 'soul-gradient-primary' },
-    { label: 'Skills & Technologies', score: 60, color: 'soul-gradient-secondary' },
-    { label: 'Education', score: 90, color: 'soul-gradient-primary' },
-    { label: 'Projects', score: 55, color: 'soul-gradient-tertiary' },
-    { label: 'Summary / Objective', score: 40, color: 'soul-gradient-secondary' },
+    { label: 'Work Experience', score: Math.min(95, score + 13), color: 'soul-gradient-primary' },
+    { label: 'Skills & Technologies', score: Math.max(30, score - 12), color: 'soul-gradient-secondary' },
+    { label: 'Education', score: Math.min(95, score + 18), color: 'soul-gradient-primary' },
+    { label: 'Projects', score: Math.max(25, score - 17), color: 'soul-gradient-tertiary' },
+    { label: 'Summary / Objective', score: Math.max(20, score - 32), color: 'soul-gradient-secondary' },
 ];
 const missingSections = [
     { icon: 'science', label: 'Projects Section', impact: 'High Impact', desc: 'Add 2–3 relevant projects to demonstrate practical skills.' },
