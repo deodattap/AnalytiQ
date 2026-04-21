@@ -155,25 +155,24 @@
             transform: translateY(-8px);
             box-shadow: 0 20px 40px -12px rgba(0,0,0,0.1);
         }
+        @keyframes robotFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
     </style>
 </head>
 <body class="bg-background text-on-surface overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
 <!-- Top Navigation -->
 <nav class="docked full-width top-0 sticky z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-[0_32px_48px_-12px_rgba(0,95,152,0.08)]">
 <div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
-<div class="text-2xl font-black tracking-tight bg-gradient-to-br from-sky-600 to-blue-400 bg-clip-text text-transparent">
-                Kinetic Mentor
-            </div>
-<div class="hidden md:flex items-center gap-8">
-<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Resume</a>
-<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Job Match</a>
-<a class="font-plus-jakarta-sans font-semibold text-sm text-slate-600 dark:text-slate-400 hover:text-sky-500 transition-colors" href="#">Analysis</a>
+<span class="text-2xl font-black tracking-tight bg-gradient-to-br from-sky-600 to-blue-400 bg-clip-text text-transparent">
+                AnalytiQ
+            </span>
+<div class="flex items-center gap-1">
+<a class="px-4 py-2 rounded-full font-semibold text-sm text-slate-600 hover:text-sky-500 hover:bg-primary/5 transition-all" href="index.html">Home</a>
+<a class="px-4 py-2 rounded-full font-semibold text-sm text-slate-600 hover:text-sky-500 hover:bg-primary/5 transition-all" href="analysis.html">Analysis</a>
 </div>
-<div class="flex items-center gap-4">
-<a href="analysis.html" class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full btn-hover shadow-lg shadow-primary/20 inline-block text-center">
-                    Get Started
-                </a>
-</div>
+<span class="text-2xl" style="display:inline-block; animation: robotFloat 3s ease-in-out infinite;">🤖</span>
 </div>
 </nav>
 <!-- Main Content -->
@@ -185,11 +184,6 @@
 <!-- Hero Section -->
 <section class="max-w-7xl mx-auto px-6 py-16 md:py-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 <div class="lg:col-span-7 space-y-8 animate-fade-slide-up">
-<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-container/10 border border-primary-container/20">
-<span class="text-xs font-bold uppercase tracking-wider text-primary">New Feature</span>
-<span class="w-1 h-1 rounded-full bg-primary"></span>
-<span class="text-xs font-medium text-primary">AI Career Analysis 2.0</span>
-</div>
 <h1 class="text-5xl md:text-7xl font-extrabold text-on-surface leading-[1.1] tracking-tight">
                     Boost Your <span class="bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">Placement Game</span> 🚀
                 </h1>
@@ -204,16 +198,7 @@
                         Check Company Match
                     </a>
 </div>
-<div class="flex items-center gap-6 pt-8 border-t border-outline-variant/10">
-<div class="flex -space-x-3">
-<img alt="User 1" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBysVWebRUdKfVD6TngvvwI27BcIYNh-7QljiqgMabNTR53eEbfdfT3tssig6iE-oPyN5CkoBCVifiEvg_ygXCtesZT6rrnJOg-0mxI2rkSqH4mhrjHcSDRRCjuRnkU4a68Ok3O0s5bNPTvRH1p4qXBhOb_E7E42I3IeKXlsK2DshF1TtwVnQajA-58-f2ugrl4EnzckA9HXP-n9HOUMssSsZsgqdyAEYjXqXCVNDXUrhZ-oNnCTVQ6Gpo26CogKL_JYnCXDuBwqeI"/>
-<img alt="User 2" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHxrdh_Pne6j65y8kkeo7jhZVBwQ5WhKFSDXZ-0ahW0hATdkZO0_lgrxE4W9DROVW64hxKo6YJCCDJSdfWrA7CTkVvoaH1101EFFt0I3Z1J6z5N8iEl4susPANSeE7LBvSQ4vP7MHHq9sIuBM8Bwf0HAI2f6yA7rdV08EP9ao1PHI2iqeKn70elKd5qhhr-qsMFFsVoUSF8MGlXAFvYBLPhgBhDcoPrf4Xw1qmaIDRprODv7eRfFQ8GBv5-qqNYnjUHI7y0WyY2kE"/>
-<img alt="User 3" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNlmtl-AZ2gLqVZ-1VzvxsZZXjbqIDmLL3OR81eN9XZ_3xite8GSv7V3mX5i4HriKeXfiOwjlua5jPSTLMNL5Yv8f2rMYXV1FHuuutYzoWgwRPu-hSaB6qAHfsieZvZ0Y-tDHQm1m98vo4KGZPcXNwbV6Nyw98zCUTMxov9ESMnbTsHMQ28E96kaO1hMMpXrYzQcQXKw3X_USaanqVsktN4jOEOUP6w9lj0oY3PFzoSbEvkBqHCZMQl1A4PbETEHa_wZ3D-05aiYo"/>
-</div>
-<p class="text-sm font-semibold text-on-surface-variant">
-<span class="text-on-surface">5,000+ Students</span> placed this month
-                    </p>
-</div>
+
 </div>
 <!-- Hero Visual -->
 <div class="lg:col-span-5 relative animate-fade-slide-up" style="animation-delay: 0.2s;">

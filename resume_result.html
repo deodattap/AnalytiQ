@@ -118,23 +118,132 @@
     .accordion-content.open { max-height: 500px; }
     .accordion-arrow { transition: transform 0.3s ease; }
     .accordion-arrow.open { transform: rotate(180deg); }
+    @keyframes robotFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+    @keyframes sparkle {
+        0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+        50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+    }
+    @keyframes navGlow {
+        0%, 100% { box-shadow: 0 8px 32px 0 rgba(0,163,255,0.08); }
+        50% { box-shadow: 0 8px 32px 0 rgba(0,163,255,0.16); }
+    }
+    /* Enhanced navbar */
+    .nav-brand {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800; font-size: 1.25rem;
+        background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        letter-spacing: -0.04em;
+    }
+    .nav-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 7px 18px; border-radius: 9999px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13px; font-weight: 700; text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        position: relative; overflow: hidden;
+    }
+    .nav-btn-ghost {
+        color: #595c5e;
+        background: transparent;
+        border: 1.5px solid rgba(171,173,175,0.3);
+    }
+    .nav-btn-ghost:hover {
+        color: #005f98;
+        background: rgba(0,95,152,0.06);
+        border-color: rgba(0,95,152,0.3);
+        transform: translateY(-1px);
+    }
+    .nav-btn-primary {
+        background: linear-gradient(135deg, #005f98 0%, #2aa7ff 100%);
+        color: #ecf3ff; border: none;
+        box-shadow: 0 4px 16px -4px rgba(0,95,152,0.4);
+    }
+    .nav-btn-primary:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 8px 24px -4px rgba(0,95,152,0.5);
+    }
+    .nav-sparkle {
+        position: absolute; pointer-events: none;
+        animation: sparkle 2.5s ease-in-out infinite;
+    }
+    /* Skill thumbnail cards */
+    .skill-card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        text-decoration: none;
+        display: flex; flex-direction: column;
+        position: relative;
+    }
+    .skill-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 20px 40px -8px rgba(0,95,152,0.2);
+    }
+    .skill-thumb {
+        height: 100px;
+        display: flex; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+    }
+    .skill-thumb::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.25) 100%);
+    }
+    .skill-card-body {
+        padding: 12px 14px;
+        background: white;
+    }
+    /* Project cards */
+    .proj-card {
+        border-radius: 14px; overflow: hidden;
+        transition: all 0.3s ease;
+        text-decoration: none; display: block;
+        background: white;
+        border: 1px solid rgba(171,173,175,0.15);
+    }
+    .proj-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px -8px rgba(135,78,0,0.18);
+    }
+    .proj-thumb {
+        height: 72px; display: flex; align-items: center;
+        padding: 0 16px; gap: 12px; position: relative; overflow: hidden;
+    }
+    /* Rec section header */
+    .rec-section-header {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 16px;
+    }
 </style>
 </head>
 <body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
 
 <!-- TopNavBar -->
-<nav class="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,163,255,0.08)]">
-    <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-        <a href="index.html" class="text-xl font-extrabold tracking-tighter text-slate-900 font-headline">Kinetic Mentor</a>
-        <div class="hidden md:flex items-center gap-8 font-headline font-semibold text-sm tracking-tight">
-            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Resume</a>
-            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Job Match</a>
-            <a class="text-slate-600 hover:text-primary transition-colors" href="#">Analysis</a>
+<nav class="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-primary/5" style="animation: navGlow 4s ease-in-out infinite;">
+    <!-- Subtle floating sparkles in navbar -->
+    <span class="nav-sparkle text-primary/30" style="top:8px; left:18%; font-size:18px; animation-delay:0s;">✦</span>
+    <span class="nav-sparkle text-sky-300/40" style="top:12px; right:22%; font-size:12px; animation-delay:0.9s;">★</span>
+    <span class="nav-sparkle text-primary/20" style="top:6px; left:55%; font-size:10px; animation-delay:1.6s;">✦</span>
+    <div class="flex justify-between items-center px-6 py-3.5 max-w-7xl mx-auto relative z-10">
+        <span class="nav-brand">AnalytiQ</span>
+        <div class="flex items-center gap-2">
+            <a class="nav-btn nav-btn-ghost" href="index.html">
+                <span class="material-symbols-outlined text-[14px]">home</span>
+                Home
+            </a>
+            <a class="nav-btn nav-btn-primary" href="analysis.html">
+                <span class="material-symbols-outlined text-[14px]">analytics</span>
+                Analysis
+            </a>
         </div>
-        <button class="soul-gradient-primary text-on-primary font-bold px-6 py-2.5 rounded-full shadow-lg shadow-primary/20 text-sm transition-all hover:scale-105 active:scale-95">
-            Get Started
-        </button>
+        <span style="display:inline-block; animation: robotFloat 3s ease-in-out infinite; font-size:1.5rem; filter: drop-shadow(0 2px 8px rgba(0,95,152,0.25));">🤖</span>
     </div>
+    <!-- Thin gradient accent line at bottom -->
+    <div style="height:2px; background: linear-gradient(90deg, transparent, #2aa7ff 30%, #005f98 70%, transparent);"></div>
 </nav>
 
 <main class="relative px-6 py-12 md:py-16 max-w-6xl mx-auto w-full">
@@ -201,11 +310,11 @@
         </div>
     </div>
 
-    <!-- Middle Row: Missing Elements + Suggestions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 relative z-10">
+    <!-- Side-by-side: Missing Skills + Improvement Suggestions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 relative z-10 animate-in delay-3">
 
-        <!-- Missing Elements -->
-        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
+        <!-- Missing Skills -->
+        <div class="glass-card rounded-xl p-8 space-y-5">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">warning</span>
@@ -215,13 +324,6 @@
                     <p class="text-xs text-on-surface-variant font-medium">Add these to boost your score</p>
                 </div>
             </div>
-
-            <!-- Missing sections -->
-            <div class="space-y-3" id="missingSections">
-                <!-- JS rendered -->
-            </div>
-
-            <!-- Missing skills -->
             <div>
                 <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label mb-3">Missing Skills</p>
                 <div class="flex flex-wrap gap-2" id="missingSkills"></div>
@@ -229,35 +331,70 @@
         </div>
 
         <!-- Improvement Suggestions -->
-        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
+        <div class="glass-card rounded-xl p-8 space-y-4">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
                 </div>
                 <div>
                     <p class="font-headline font-bold text-on-surface">Improvement Suggestions</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Quick wins to improve your resume</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Quick wins to stand out</p>
                 </div>
             </div>
-            <div class="space-y-3" id="suggestions"></div>
+            <div class="space-y-3">
+                <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+                    <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-secondary text-[15px]">folder_open</span>
+                    </div>
+                    <p class="text-sm text-on-surface-variant leading-relaxed font-medium">Add projects related to your skills — even college or personal projects count!</p>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+                    <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-secondary text-[15px]">edit</span>
+                    </div>
+                    <p class="text-sm text-on-surface-variant leading-relaxed font-medium">Improve resume content — use action verbs, quantify achievements, and tailor to each job.</p>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                    <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-primary text-[15px]">tips_and_updates</span>
+                    </div>
+                    <p class="text-sm text-primary leading-relaxed font-semibold">💡 Refer to the learning resources below to fast-track your progress.</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Bottom Row: Learning Resources -->
-    <div class="glass-card rounded-xl p-8 space-y-6 relative z-10 animate-in delay-4">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
+    <!-- Recommendations -->
+    <div class="space-y-6 relative z-10 animate-in delay-4">
+
+        <!-- Section 1: Learn Missing Skills — Visual Thumbnail Cards -->
+        <div class="glass-card rounded-xl p-8">
+            <div class="rec-section-header">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Learning Resources</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Curated content to fill your skill gaps</p>
+                    <p class="font-headline font-bold text-on-surface">Learn Missing Skills</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Tap a card to open a curated YouTube search 🎬</p>
                 </div>
             </div>
-            <span class="font-label text-xs font-bold text-on-surface-variant">4 resources</span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="learnSkills"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="resources"></div>
+
+        <!-- Section 2: Project Suggestions — Creative Cards -->
+        <div class="glass-card rounded-xl p-8">
+            <div class="rec-section-header">
+                <div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">code</span>
+                </div>
+                <div>
+                    <p class="font-headline font-bold text-on-surface">Project Suggestions</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Click any card to explore project ideas 🚀</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="projectSuggestions"></div>
+        </div>
+
     </div>
 
     <!-- CTA bottom strip -->
@@ -332,23 +469,26 @@ const sections = [
     { label: 'Projects', score: Math.max(25, score - 17), color: 'soul-gradient-tertiary' },
     { label: 'Summary / Objective', score: Math.max(20, score - 32), color: 'soul-gradient-secondary' },
 ];
-const missingSections = [
-    { icon: 'science', label: 'Projects Section', impact: 'High Impact', desc: 'Add 2–3 relevant projects to demonstrate practical skills.' },
-    { icon: 'workspace_premium', label: 'Certifications', impact: 'Medium Impact', desc: 'List relevant certifications (AWS, Google, etc.) to stand out.' },
-    { icon: 'badge', label: 'Summary Statement', impact: 'Medium Impact', desc: 'A 2–3 line professional summary greatly improves first impressions.' },
-];
 const missingSkills = ['Docker', 'Kubernetes', 'SQL', 'REST APIs', 'System Design', 'CI/CD'];
-const suggestions = [
-    { icon: 'format_list_numbered', text: 'Quantify your achievements (e.g., "Reduced load time by 40%") to make experience entries more compelling.' },
-    { icon: 'link', text: 'Add a link to your GitHub or portfolio directly in the header of your resume.' },
-    { icon: 'psychology', text: 'Replace generic phrases like "team player" with specific examples of collaboration.' },
-    { icon: 'tune', text: 'Tailor the skills section to match the keywords in job descriptions you\'re targeting.' },
+
+// Learn Missing Skills — thumbnail card data
+const learnSkillsData = [
+    { skill: 'Docker', emoji: '🐳', bg: 'linear-gradient(135deg,#0db7ed,#384d54)', ytQuery: 'Docker tutorial for beginners' },
+    { skill: 'Kubernetes', emoji: '☸️', bg: 'linear-gradient(135deg,#326ce5,#1a3a8f)', ytQuery: 'Kubernetes tutorial for beginners' },
+    { skill: 'SQL', emoji: '🗄️', bg: 'linear-gradient(135deg,#f7971e,#ffd200)', ytQuery: 'SQL tutorial for beginners' },
+    { skill: 'REST APIs', emoji: '🔗', bg: 'linear-gradient(135deg,#11998e,#38ef7d)', ytQuery: 'REST API tutorial for beginners' },
+    { skill: 'System Design', emoji: '🏗️', bg: 'linear-gradient(135deg,#8e44ad,#c0392b)', ytQuery: 'System design interview tutorial' },
+    { skill: 'CI/CD', emoji: '⚙️', bg: 'linear-gradient(135deg,#2c3e50,#4ca1af)', ytQuery: 'CI CD pipeline tutorial for beginners' },
 ];
-const resources = [
-    { icon: 'play_circle', type: 'Video', title: 'Resume Writing Masterclass', source: 'YouTube', color: 'bg-error/10 text-error', href: '#' },
-    { icon: 'article', type: 'Article', title: 'How to List Projects on a Resume', source: 'Medium', color: 'bg-primary/10 text-primary', href: '#' },
-    { icon: 'school', type: 'Course', title: 'Docker for Beginners', source: 'Udemy', color: 'bg-secondary/10 text-secondary', href: '#' },
-    { icon: 'play_circle', type: 'Video', title: 'System Design Interview Prep', source: 'YouTube', color: 'bg-tertiary/10 text-tertiary', href: '#' },
+
+// Project Suggestions — creative card data
+const projectData = [
+    { skill: 'Docker', emoji: '🐳', idea: 'Dockerize a Web App', desc: 'Containerize any project + write a Dockerfile from scratch', bg: 'rgba(13,183,237,0.08)', accent: '#0db7ed', googleQuery: 'Docker beginner project ideas' },
+    { skill: 'Kubernetes', emoji: '☸️', idea: 'Deploy a Microservice', desc: 'Use K8s to orchestrate a small Node.js API', bg: 'rgba(50,108,229,0.07)', accent: '#326ce5', googleQuery: 'Kubernetes beginner project ideas' },
+    { skill: 'SQL', emoji: '🗄️', idea: 'Library Management DB', desc: 'Design schemas, write JOINs and stored procedures', bg: 'rgba(247,151,30,0.08)', accent: '#f7971e', googleQuery: 'SQL project ideas for beginners' },
+    { skill: 'REST APIs', emoji: '🔗', idea: 'CRUD REST API', desc: 'Build a full CRUD API with Node.js + Express + MongoDB', bg: 'rgba(17,153,142,0.08)', accent: '#11998e', googleQuery: 'REST API project ideas for students' },
+    { skill: 'System Design', emoji: '🏗️', idea: 'URL Shortener System', desc: 'Design scalable short URL service with diagrams', bg: 'rgba(142,68,173,0.08)', accent: '#8e44ad', googleQuery: 'system design project ideas for students' },
+    { skill: 'CI/CD', emoji: '⚙️', idea: 'GitHub Actions Pipeline', desc: 'Auto-test and deploy your project on every push', bg: 'rgba(44,62,80,0.07)', accent: '#2c3e50', googleQuery: 'CI/CD beginner project ideas' },
 ];
 
 // --- RENDER ---
@@ -359,7 +499,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const circumference = 2 * Math.PI * 80;
         const offset = circumference * (1 - score / 100);
         ring.style.strokeDashoffset = offset;
-        // Count up
         let current = 0;
         const step = score / 60;
         const counter = setInterval(() => {
@@ -375,76 +514,58 @@ window.addEventListener('DOMContentLoaded', () => {
         sbContainer.innerHTML += `
         <div class="flex items-center gap-3">
             <span class="text-xs font-semibold text-on-surface-variant font-label w-36 shrink-0">${s.label}</span>
-            <div class="score-bar-track">
-                <div class="score-bar-fill ${s.color}" id="bar${i}"></div>
-            </div>
+            <div class="score-bar-track"><div class="score-bar-fill ${s.color}" id="bar${i}"></div></div>
             <span class="text-xs font-bold text-on-surface font-headline w-8 text-right">${s.score}</span>
         </div>`;
     });
-    setTimeout(() => {
-        sections.forEach((s, i) => {
-            document.getElementById('bar' + i).style.width = s.score + '%';
-        });
-    }, 600);
+    setTimeout(() => { sections.forEach((s, i) => { document.getElementById('bar' + i).style.width = s.score + '%'; }); }, 600);
 
-    // Missing sections
-    const msContainer = document.getElementById('missingSections');
-    missingSections.forEach(m => {
-        const impactColor = m.impact === 'High Impact' ? 'bg-error/10 text-error' : 'bg-tertiary/10 text-tertiary';
-        msContainer.innerHTML += `
-        <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
-            <div class="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="material-symbols-outlined text-error text-[16px]">${m.icon}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <p class="text-sm font-bold text-on-surface font-headline">${m.label}</p>
-                    <span class="text-[10px] font-bold ${impactColor} px-2 py-0.5 rounded-full uppercase tracking-wide">${m.impact}</span>
-                </div>
-                <p class="text-xs text-on-surface-variant leading-relaxed mt-0.5">${m.desc}</p>
-            </div>
-        </div>`;
-    });
-
-    // Missing skills
+    // Missing skills tags
     const skillsContainer = document.getElementById('missingSkills');
-    missingSkills.forEach(s => {
-        skillsContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${s}</span>`;
-    });
+    if (skillsContainer) {
+        missingSkills.forEach(s => {
+            skillsContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${s}</span>`;
+        });
+    }
 
-    // Suggestions
-    const sugContainer = document.getElementById('suggestions');
-    suggestions.forEach((s, i) => {
-        sugContainer.innerHTML += `
-        <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
-            <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="material-symbols-outlined text-secondary text-[15px]">${s.icon}</span>
+    // Section 1: Learn Missing Skills — thumbnail cards
+    const learnContainer = document.getElementById('learnSkills');
+    learnSkillsData.forEach(item => {
+        const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(item.ytQuery)}`;
+        learnContainer.innerHTML += `
+        <a href="${ytUrl}" target="_blank" rel="noopener" class="skill-card" title="Learn ${item.skill} on YouTube">
+            <div class="skill-thumb" style="background:${item.bg};">
+                <span style="font-size:2.8rem; z-index:1; position:relative; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${item.emoji}</span>
+                <span style="position:absolute;bottom:7px;right:10px;z-index:2;background:rgba(255,0,0,0.85);color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;font-family:'Manrope',sans-serif;">▶ YouTube</span>
             </div>
-            <p class="text-sm text-on-surface-variant leading-relaxed font-medium">${s.text}</p>
-        </div>`;
+            <div class="skill-card-body">
+                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:#2c2f31;margin:0 0 2px;">${item.skill}</p>
+                <p style="font-size:10px;color:#595c5e;margin:0;">Watch tutorial →</p>
+            </div>
+        </a>`;
     });
 
-    // Resources
-    const resContainer = document.getElementById('resources');
-    resources.forEach(r => {
-        resContainer.innerHTML += `
-        <a href="${r.href}" class="resource-card bg-surface-container-low rounded-xl p-5 space-y-3 block">
-            <div class="flex items-center justify-between">
-                <div class="w-9 h-9 rounded-full ${r.color} bg-opacity-10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">${r.icon}</span>
+    // Section 2: Project Suggestions — creative cards
+    const projContainer = document.getElementById('projectSuggestions');
+    projectData.forEach(item => {
+        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(item.googleQuery)}`;
+        projContainer.innerHTML += `
+        <a href="${googleUrl}" target="_blank" rel="noopener" class="proj-card">
+            <div class="proj-thumb" style="background:${item.bg};">
+                <span style="font-size:2rem;">${item.emoji}</span>
+                <div>
+                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:800;color:${item.accent};text-transform:uppercase;letter-spacing:.06em;margin:0;">${item.skill}</p>
+                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#2c2f31;margin:2px 0 0;">${item.idea}</p>
                 </div>
-                <span class="text-[10px] font-bold ${r.color} bg-opacity-10 px-2 py-0.5 rounded-full uppercase tracking-wide border border-current border-opacity-20">${r.type}</span>
             </div>
-            <div>
-                <p class="font-headline font-bold text-sm text-on-surface leading-snug">${r.title}</p>
-                <p class="text-xs text-on-surface-variant mt-1 font-medium">${r.source}</p>
-            </div>
-            <div class="flex items-center gap-1 text-primary text-xs font-bold font-headline">
-                View resource <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <div style="padding:10px 16px 14px;">
+                <p style="font-size:12px;color:#595c5e;font-family:'Manrope',sans-serif;margin:0 0 8px;line-height:1.5;">${item.desc}</p>
+                <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:${item.accent};font-family:'Plus Jakarta Sans',sans-serif;">🔍 Search project ideas →</span>
             </div>
         </a>`;
     });
 });
+
 </script>
 </body>
 </html>
