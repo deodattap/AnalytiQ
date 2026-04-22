@@ -286,7 +286,7 @@
 <script>
 // ── Load real backend result ──────────────────────────────────────────────────
 const raw = sessionStorage.getItem('matchResult');
-if (!raw) { window.location.href = 'company_input.html'; }
+if (!raw) { window.location.href = 'company_input.html'; throw new Error('No result data'); }
 const result = JSON.parse(raw);
 
 const resumeFileName  = sessionStorage.getItem('resumeFileName') || result.filename || 'Resume.pdf';

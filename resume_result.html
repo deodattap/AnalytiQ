@@ -417,7 +417,7 @@
 <script>
 // ── Load real backend result ──────────────────────────────────────────────────
 const raw = sessionStorage.getItem('analyzeResult');
-if (!raw) { window.location.href = 'resume_upload.html'; }
+if (!raw) { window.location.href = 'resume_upload.html'; throw new Error('No result data'); }
 const result = JSON.parse(raw);
 
 const fileName       = sessionStorage.getItem('resumeFileName') || result.filename || 'Resume.pdf';

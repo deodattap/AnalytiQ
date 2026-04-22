@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
 CORS(app)
 
 # ── Predefined skill list (50 skills) ────────────────────────────────────────
@@ -111,10 +112,15 @@ def index():
 
 @app.route('/<path:filename>')
 def static_files(filename):
+    # Never intercept API paths — return 404 so the API routes handle them properly
+    if filename.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
     return send_from_directory('.', filename)
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
+    if request.method != 'POST':
+        return jsonify({'error': 'Method not allowed. Use POST.'}), 405
     if 'resume' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
 
@@ -179,6 +185,8 @@ def analyze():
 
 @app.route('/api/match', methods=['POST'])
 def match():
+    if request.method != 'POST':
+        return jsonify({'error': 'Method not allowed. Use POST.'}), 405
     if 'resume' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
     if 'job_description' not in request.form:
@@ -219,6 +227,24 @@ def match():
         'filename':        file.filename,
         'total_jd_skills': total_jd,
     })
+
+
+# ── Global error handlers (always return JSON, never HTML) ────────────────────
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'error': 'Endpoint not found'}), 404
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return jsonify({'error': 'Method not allowed. This endpoint requires POST.'}), 405
+
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({'error': 'File too large. Please upload a file under 16 MB.'}), 413
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
 if __name__ == '__main__':

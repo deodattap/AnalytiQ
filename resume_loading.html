@@ -211,6 +211,7 @@
     if (!fileData || !fileName) {
         // Nothing to analyze — send user back to upload
         window.location.href = 'resume_upload.html';
+        throw new Error('No file data in session');
     }
 
     function base64ToFile(dataURL, name, type) {

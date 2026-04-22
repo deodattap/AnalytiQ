@@ -204,6 +204,7 @@
     if (!fileData || !fileName || !jobDesc) {
         // Missing data — send user back to input
         window.location.href = 'company_input.html';
+        throw new Error('No session data');
     }
 
     function base64ToFile(dataURL, name, type) {
