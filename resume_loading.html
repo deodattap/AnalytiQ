@@ -197,26 +197,42 @@
 </footer>
 
 <script>
-    let pct = 0;
     const pctDisplay = document.getElementById('pctDisplay');
     const progressBar = document.getElementById('progressBar');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    const step2Icon = document.getElementById('step2Icon');
+    const step2      = document.getElementById('step2');
+    const step3      = document.getElementById('step3');
+    const step2Icon  = document.getElementById('step2Icon');
 
-    // Animate progress
-    const interval = setInterval(() => {
-        pct += Math.random() * 3 + 1.5;
-        if (pct >= 100) {
-            pct = 100;
-            clearInterval(interval);
-            // Navigate after short delay
-            setTimeout(() => { window.location.href = 'resume_result.html'; }, 600);
+    // ── Reconstruct File from base64 stored by resume_upload.html ────────────
+    const fileData = sessionStorage.getItem('resumeFileData');
+    const fileName = sessionStorage.getItem('resumeFileName');
+    const fileType = sessionStorage.getItem('resumeFileType') || 'application/octet-stream';
+
+    if (!fileData || !fileName) {
+        // Nothing to analyze — send user back to upload
+        window.location.href = 'resume_upload.html';
+    }
+
+    function base64ToFile(dataURL, name, type) {
+        const arr   = dataURL.split(',');
+        const mime  = arr[0].match(/:(.*?);/)[1];
+        const bstr  = atob(arr[1]);
+        let n       = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        return new File([u8arr], name, { type: type || mime });
+    }
+
+    // ── Animated progress bar (visual feedback while fetch runs) ─────────────
+    let pct = 0;
+    const targetPct = 85; // Pause at 85% until API responds
+    const fakeInterval = setInterval(() => {
+        if (pct < targetPct) {
+            pct = Math.min(pct + Math.random() * 2.5 + 1, targetPct);
         }
         pctDisplay.textContent = Math.round(pct) + '%';
         progressBar.style.width = pct + '%';
 
-        // Step transitions
         if (pct >= 30 && step2.classList.contains('step-pending')) {
             step2.classList.remove('step-pending');
             step2.classList.add('step-active');
@@ -227,6 +243,60 @@
             step3.classList.add('step-active');
         }
     }, 80);
+
+    // ── Error display ─────────────────────────────────────────────────────────
+    function showError(msg) {
+        clearInterval(fakeInterval);
+        const card = document.querySelector('.glass-card');
+        card.innerHTML = `
+            <span class="font-label text-error uppercase tracking-widest text-xs font-bold bg-error/5 px-4 py-1.5 rounded-full">Analysis Failed</span>
+            <div class="mt-8 flex flex-col items-center gap-4">
+                <span class="material-symbols-outlined text-error text-5xl" style="font-variation-settings:'FILL' 1;">error</span>
+                <p class="font-headline font-bold text-on-surface text-xl text-center">${msg}</p>
+                <a href="resume_upload.html" class="mt-4 soul-gradient-primary text-on-primary font-headline font-bold px-8 py-3 rounded-full flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span> Try Again
+                </a>
+            </div>`;
+    }
+
+    // ── Main: POST to Flask and handle response ───────────────────────────────
+    async function runAnalysis() {
+        try {
+            const file = base64ToFile(fileData, fileName, fileType);
+            const formData = new FormData();
+            formData.append('resume', file);
+
+            const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                showError(errData.error || `Server error (${response.status}). Please try again.`);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.error) { showError(data.error); return; }
+
+            // Complete the progress bar
+            clearInterval(fakeInterval);
+            pct = 100;
+            pctDisplay.textContent = '100%';
+            progressBar.style.width = '100%';
+
+            // Store result and navigate
+            sessionStorage.setItem('analyzeResult', JSON.stringify(data));
+            sessionStorage.setItem('resumeFileName', data.filename || fileName);
+            // Clean up large base64 data now that we're done with it
+            sessionStorage.removeItem('resumeFileData');
+
+            setTimeout(() => { window.location.href = 'resume_result.html'; }, 600);
+
+        } catch (err) {
+            showError('Could not connect to the analysis server. Make sure app.py is running on port 5000.');
+        }
+    }
+
+    runAnalysis();
 </script>
 </body>
 </html>

@@ -330,72 +330,62 @@
             </div>
         </div>
 
-        <!-- Improvement Suggestions -->
+
+        <!-- Improvement Suggestions — dynamic from backend missing_sections -->
         <div class="glass-card rounded-xl p-8 space-y-4">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Improvement Suggestions</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Quick wins to stand out</p>
+                    <p class="font-headline font-bold text-on-surface">Improvement</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Resume structure fixes</p>
                 </div>
             </div>
-            <div class="space-y-3">
-                <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
-                    <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-secondary text-[15px]">folder_open</span>
-                    </div>
-                    <p class="text-sm text-on-surface-variant leading-relaxed font-medium">Add projects related to your skills — even college or personal projects count!</p>
-                </div>
-                <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
-                    <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-secondary text-[15px]">edit</span>
-                    </div>
-                    <p class="text-sm text-on-surface-variant leading-relaxed font-medium">Improve resume content — use action verbs, quantify achievements, and tailor to each job.</p>
-                </div>
-                <div class="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                    <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <span class="material-symbols-outlined text-primary text-[15px]">tips_and_updates</span>
-                    </div>
-                    <p class="text-sm text-primary leading-relaxed font-semibold">💡 Refer to the learning resources below to fast-track your progress.</p>
-                </div>
+            <div class="space-y-3" id="improvementSuggestions">
+                <!-- JS will render section fix items here -->
             </div>
         </div>
     </div>
 
-    <!-- Recommendations -->
+
+
+
+
+    <!-- Boost Section: Skill & Career Upgrade -->
     <div class="space-y-6 relative z-10 animate-in delay-4">
 
-        <!-- Section 1: Learn Missing Skills — Visual Thumbnail Cards -->
+        <!-- Boost Panel 1: Learn Missing Skills -->
         <div class="glass-card rounded-xl p-8">
             <div class="rec-section-header">
                 <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
+                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Learn Missing Skills</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Tap a card to open a curated YouTube search 🎬</p>
+                    <p class="font-headline font-bold text-on-surface">Boost — Learn Missing Skills</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Tap a card to open a curated YouTube tutorial 🎬</p>
                 </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="learnSkills"></div>
         </div>
 
-        <!-- Section 2: Project Suggestions — Creative Cards -->
+        <!-- Boost Panel 2: Project Ideas -->
         <div class="glass-card rounded-xl p-8">
             <div class="rec-section-header">
                 <div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">code</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Project Suggestions</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Click any card to explore project ideas 🚀</p>
+                    <p class="font-headline font-bold text-on-surface">Boost — Build a Project</p>
+                    <p class="text-xs text-on-surface-variant font-medium">Click any card to explore hands-on project ideas 🚀</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="projectSuggestions"></div>
         </div>
 
     </div>
+
+
 
     <!-- CTA bottom strip -->
     <div class="mt-8 soul-gradient-primary rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 overflow-hidden animate-in delay-5">
@@ -425,80 +415,81 @@
 </footer>
 
 <script>
-// --- DATA (reads from sessionStorage where available) ---
-const fileName = sessionStorage.getItem('resumeFileName') || 'Resume_Final_v3.pdf';
+// ── Load real backend result ──────────────────────────────────────────────────
+const raw = sessionStorage.getItem('analyzeResult');
+if (!raw) { window.location.href = 'resume_upload.html'; }
+const result = JSON.parse(raw);
 
-// Generate a deterministic score from the filename (consistent for same file)
-function hashScore(str, min, max) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffffffff;
-    return min + (Math.abs(h) % (max - min + 1));
-}
-const score = hashScore(fileName, 62, 88);
+const fileName       = sessionStorage.getItem('resumeFileName') || result.filename || 'Resume.pdf';
+const score          = result.resume_score || 0;
+const missingSkills  = result.missing_skills  || [];
+const missingSections = result.missing_sections || [];
 
-// Update the meta line with real filename
+// ── Section advice map ─────────────────────────────────────────────────────
+const SECTION_ADVICE = {
+    skills:     { icon: 'build',       text: 'Add a Technical Skills section listing your languages, frameworks, and tools.' },
+    projects:   { icon: 'folder_open', text: 'Add a Projects section with 2–3 projects (college, personal, or open-source all count).' },
+    experience: { icon: 'work',        text: 'Include Work Experience or Internship — even part-time or freelance roles are valuable.' },
+    education:  { icon: 'school',      text: 'Add an Education section with your degree, institution, and graduation year.' },
+    summary:    { icon: 'notes',       text: 'Add a Summary or Objective (2–3 sentences) that highlights your goals and strengths.' },
+};
+
+// Build section bar data from backend section_scores
+const sectionScores = result.section_scores || {};
+const sections = Object.entries(sectionScores).map(([label, s], i) => ({
+    label,
+    score: s,
+    color: i % 2 === 0 ? 'soul-gradient-primary' : (i % 3 === 1 ? 'soul-gradient-secondary' : 'soul-gradient-tertiary'),
+}));
+
+// Build learn/project card data from backend recommendations
+const learnSkillsData = (result.recommendations || []).map(r => ({
+    skill: r.skill,
+    emoji: r.emoji || '🛠️',
+    bg:    r.bg    || 'linear-gradient(135deg,#005f98,#2aa7ff)',
+    ytUrl: r.youtube_url,
+}));
+
+const projectData = (result.recommendations || []).map(r => ({
+    skill:     r.skill,
+    emoji:     r.emoji || '🛠️',
+    idea:      r.skill.charAt(0).toUpperCase() + r.skill.slice(1) + ' Project',
+    desc:      'Build a hands-on ' + r.skill + ' project to showcase on your resume',
+    googleUrl: r.project_url,
+}));
+
+// ── DOM updates ───────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // Meta line
     const meta = document.querySelector('p.text-on-surface-variant.font-medium');
     if (meta) {
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         meta.innerHTML = `Analyzed on <strong>${today}</strong> · ${fileName}`;
     }
-    // Update score label based on value
-    const label = document.querySelector('.score-center + div p.font-bold') ||
-                  document.querySelector('[class*="score-center"] ~ div p.font-bold');
-    const scoreLabel = score >= 80 ? 'Great Profile!' : score >= 65 ? 'Good Foundation' : 'Needs Work';
-    const scoreSub = score >= 80 ? 'Top 15% of resumes reviewed'
-                   : score >= 65 ? 'Top 35% of resumes reviewed'
-                   : 'Room to improve — follow the suggestions below';
-    // Try to find and update the label nodes inside the score card
+
+    // Score label
     const scoreCard = document.getElementById('scoreDisplay');
     if (scoreCard) {
         const cardParent = scoreCard.closest('.glass-card');
         if (cardParent) {
             const ps = cardParent.querySelectorAll('p');
-            if (ps[0]) ps[0].textContent = scoreLabel;
-            if (ps[1]) ps[1].textContent = scoreSub;
+            const lbl = score >= 80 ? 'Great Profile!' : score >= 65 ? 'Good Foundation' : 'Needs Improvement';
+            const sub = score >= 80 ? 'Top 15% of resumes reviewed'
+                      : score >= 65 ? 'Top 35% of resumes reviewed'
+                      : 'Follow the suggestions below to improve';
+            if (ps[0]) ps[0].textContent = lbl;
+            if (ps[1]) ps[1].textContent = sub;
         }
     }
 });
 
-const sections = [
-    { label: 'Work Experience', score: Math.min(95, score + 13), color: 'soul-gradient-primary' },
-    { label: 'Skills & Technologies', score: Math.max(30, score - 12), color: 'soul-gradient-secondary' },
-    { label: 'Education', score: Math.min(95, score + 18), color: 'soul-gradient-primary' },
-    { label: 'Projects', score: Math.max(25, score - 17), color: 'soul-gradient-tertiary' },
-    { label: 'Summary / Objective', score: Math.max(20, score - 32), color: 'soul-gradient-secondary' },
-];
-const missingSkills = ['Docker', 'Kubernetes', 'SQL', 'REST APIs', 'System Design', 'CI/CD'];
-
-// Learn Missing Skills — thumbnail card data
-const learnSkillsData = [
-    { skill: 'Docker', emoji: '🐳', bg: 'linear-gradient(135deg,#0db7ed,#384d54)', ytQuery: 'Docker tutorial for beginners' },
-    { skill: 'Kubernetes', emoji: '☸️', bg: 'linear-gradient(135deg,#326ce5,#1a3a8f)', ytQuery: 'Kubernetes tutorial for beginners' },
-    { skill: 'SQL', emoji: '🗄️', bg: 'linear-gradient(135deg,#f7971e,#ffd200)', ytQuery: 'SQL tutorial for beginners' },
-    { skill: 'REST APIs', emoji: '🔗', bg: 'linear-gradient(135deg,#11998e,#38ef7d)', ytQuery: 'REST API tutorial for beginners' },
-    { skill: 'System Design', emoji: '🏗️', bg: 'linear-gradient(135deg,#8e44ad,#c0392b)', ytQuery: 'System design interview tutorial' },
-    { skill: 'CI/CD', emoji: '⚙️', bg: 'linear-gradient(135deg,#2c3e50,#4ca1af)', ytQuery: 'CI CD pipeline tutorial for beginners' },
-];
-
-// Project Suggestions — creative card data
-const projectData = [
-    { skill: 'Docker', emoji: '🐳', idea: 'Dockerize a Web App', desc: 'Containerize any project + write a Dockerfile from scratch', bg: 'rgba(13,183,237,0.08)', accent: '#0db7ed', googleQuery: 'Docker beginner project ideas' },
-    { skill: 'Kubernetes', emoji: '☸️', idea: 'Deploy a Microservice', desc: 'Use K8s to orchestrate a small Node.js API', bg: 'rgba(50,108,229,0.07)', accent: '#326ce5', googleQuery: 'Kubernetes beginner project ideas' },
-    { skill: 'SQL', emoji: '🗄️', idea: 'Library Management DB', desc: 'Design schemas, write JOINs and stored procedures', bg: 'rgba(247,151,30,0.08)', accent: '#f7971e', googleQuery: 'SQL project ideas for beginners' },
-    { skill: 'REST APIs', emoji: '🔗', idea: 'CRUD REST API', desc: 'Build a full CRUD API with Node.js + Express + MongoDB', bg: 'rgba(17,153,142,0.08)', accent: '#11998e', googleQuery: 'REST API project ideas for students' },
-    { skill: 'System Design', emoji: '🏗️', idea: 'URL Shortener System', desc: 'Design scalable short URL service with diagrams', bg: 'rgba(142,68,173,0.08)', accent: '#8e44ad', googleQuery: 'system design project ideas for students' },
-    { skill: 'CI/CD', emoji: '⚙️', idea: 'GitHub Actions Pipeline', desc: 'Auto-test and deploy your project on every push', bg: 'rgba(44,62,80,0.07)', accent: '#2c3e50', googleQuery: 'CI/CD beginner project ideas' },
-];
-
-// --- RENDER ---
+// ── RENDER ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    // Score ring animation
+    // Score ring
     setTimeout(() => {
         const ring = document.getElementById('scoreRing');
         const circumference = 2 * Math.PI * 80;
-        const offset = circumference * (1 - score / 100);
-        ring.style.strokeDashoffset = offset;
+        ring.style.strokeDashoffset = circumference * (1 - score / 100);
         let current = 0;
         const step = score / 60;
         const counter = setInterval(() => {
@@ -523,49 +514,99 @@ window.addEventListener('DOMContentLoaded', () => {
     // Missing skills tags
     const skillsContainer = document.getElementById('missingSkills');
     if (skillsContainer) {
-        missingSkills.forEach(s => {
-            skillsContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${s}</span>`;
-        });
+        if (missingSkills.length === 0) {
+            skillsContainer.innerHTML = '<span class="text-sm text-on-surface-variant font-medium">No major skills missing — great job! 🎉</span>';
+        } else {
+            missingSkills.forEach(s => {
+                skillsContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+            });
+        }
     }
 
-    // Section 1: Learn Missing Skills — thumbnail cards
-    const learnContainer = document.getElementById('learnSkills');
-    learnSkillsData.forEach(item => {
-        const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(item.ytQuery)}`;
-        learnContainer.innerHTML += `
-        <a href="${ytUrl}" target="_blank" rel="noopener" class="skill-card" title="Learn ${item.skill} on YouTube">
-            <div class="skill-thumb" style="background:${item.bg};">
-                <span style="font-size:2.8rem; z-index:1; position:relative; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${item.emoji}</span>
-                <span style="position:absolute;bottom:7px;right:10px;z-index:2;background:rgba(255,0,0,0.85);color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;font-family:'Manrope',sans-serif;">▶ YouTube</span>
-            </div>
-            <div class="skill-card-body">
-                <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:#2c2f31;margin:0 0 2px;">${item.skill}</p>
-                <p style="font-size:10px;color:#595c5e;margin:0;">Watch tutorial →</p>
-            </div>
-        </a>`;
-    });
-
-    // Section 2: Project Suggestions — creative cards
-    const projContainer = document.getElementById('projectSuggestions');
-    projectData.forEach(item => {
-        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(item.googleQuery)}`;
-        projContainer.innerHTML += `
-        <a href="${googleUrl}" target="_blank" rel="noopener" class="proj-card">
-            <div class="proj-thumb" style="background:${item.bg};">
-                <span style="font-size:2rem;">${item.emoji}</span>
-                <div>
-                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:800;color:${item.accent};text-transform:uppercase;letter-spacing:.06em;margin:0;">${item.skill}</p>
-                    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#2c2f31;margin:2px 0 0;">${item.idea}</p>
+    // ── Improvement Section — missing resume sections ─────────────────────────
+    const improvContainer = document.getElementById('improvementSuggestions');
+    if (improvContainer) {
+        if (missingSections.length === 0) {
+            // All sections present — show positive message
+            improvContainer.innerHTML = `
+            <div class="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-primary text-[15px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
                 </div>
-            </div>
-            <div style="padding:10px 16px 14px;">
-                <p style="font-size:12px;color:#595c5e;font-family:'Manrope',sans-serif;margin:0 0 8px;line-height:1.5;">${item.desc}</p>
-                <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:${item.accent};font-family:'Plus Jakarta Sans',sans-serif;">🔍 Search project ideas →</span>
-            </div>
-        </a>`;
-    });
-});
+                <p class="text-sm text-primary leading-relaxed font-semibold">✅ Your resume structure looks great — all key sections are present!</p>
+            </div>`;
+        } else {
+            missingSections.forEach(sec => {
+                const advice = SECTION_ADVICE[sec] || { icon: 'add_circle', text: `Add a "${sec.charAt(0).toUpperCase() + sec.slice(1)}" section to your resume.` };
+                improvContainer.innerHTML += `
+                <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+                    <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-secondary text-[15px]">${advice.icon}</span>
+                    </div>
+                    <p class="text-sm text-on-surface-variant leading-relaxed font-medium">${advice.text}</p>
+                </div>`;
+            });
+            // Always add a general polish tip
+            improvContainer.innerHTML += `
+            <div class="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-primary text-[15px]">tips_and_updates</span>
+                </div>
+                <p class="text-sm text-primary leading-relaxed font-semibold">💡 Use action verbs and quantify achievements — e.g. "Built X that improved Y by Z%".</p>
+            </div>`;
+        }
+    }
 
+    // ── Boost Section 1: Learn Missing Skills thumbnail cards ─────────────────
+    const learnContainer = document.getElementById('learnSkills');
+    if (learnContainer) {
+        if (learnSkillsData.length === 0) {
+            learnContainer.innerHTML = '<p class="text-sm text-on-surface-variant col-span-full">No additional learning resources needed based on your resume.</p>';
+        } else {
+            learnSkillsData.forEach(item => {
+                const ytUrl = item.ytUrl || `https://www.youtube.com/results?search_query=learn+${encodeURIComponent(item.skill)}+for+beginners`;
+                learnContainer.innerHTML += `
+                <a href="${ytUrl}" target="_blank" rel="noopener" class="skill-card" title="Learn ${item.skill} on YouTube">
+                    <div class="skill-thumb" style="background:${item.bg};">
+                        <span style="font-size:2.8rem; z-index:1; position:relative; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));">${item.emoji}</span>
+                        <span style="position:absolute;bottom:7px;right:10px;z-index:2;background:rgba(255,0,0,0.85);color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;font-family:'Manrope',sans-serif;">▶ YouTube</span>
+                    </div>
+                    <div class="skill-card-body">
+                        <p style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:12px;color:#2c2f31;margin:0 0 2px;">${item.skill.charAt(0).toUpperCase()+item.skill.slice(1)}</p>
+                        <p style="font-size:10px;color:#595c5e;margin:0;">Watch tutorial →</p>
+                    </div>
+                </a>`;
+            });
+        }
+    }
+
+    // ── Boost Section 2: Project Suggestions cards ────────────────────────────
+    const projContainer = document.getElementById('projectSuggestions');
+    if (projContainer) {
+        if (projectData.length === 0) {
+            projContainer.innerHTML = '<p class="text-sm text-on-surface-variant col-span-full">No project suggestions — your resume looks comprehensive!</p>';
+        } else {
+            projectData.forEach(item => {
+                const googleUrl = item.googleUrl || `https://www.google.com/search?q=${encodeURIComponent(item.skill)}+project+ideas`;
+                projContainer.innerHTML += `
+                <a href="${googleUrl}" target="_blank" rel="noopener" class="proj-card">
+                    <div class="proj-thumb" style="background:rgba(0,95,152,0.08);">
+                        <span style="font-size:2rem;">${item.emoji}</span>
+                        <div>
+                            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:800;color:#005f98;text-transform:uppercase;letter-spacing:.06em;margin:0;">${item.skill}</p>
+                            <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#2c2f31;margin:2px 0 0;">${item.idea}</p>
+                        </div>
+                    </div>
+                    <div style="padding:10px 16px 14px;">
+                        <p style="font-size:12px;color:#595c5e;font-family:'Manrope',sans-serif;margin:0 0 8px;line-height:1.5;">${item.desc}</p>
+                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#005f98;font-family:'Plus Jakarta Sans',sans-serif;">🔍 Search project ideas →</span>
+                    </div>
+                </a>`;
+            });
+        }
+    }
+});
 </script>
+
 </body>
 </html>

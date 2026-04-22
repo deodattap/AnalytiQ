@@ -381,10 +381,27 @@
     }
     function startAnalysis() {
         if (!uploadedFile) return;
-        // Store file info for result page
-        sessionStorage.setItem('resumeFileName', uploadedFile.name);
-        sessionStorage.setItem('resumeUploaded', 'true');
-        window.location.href = 'resume_loading.html';
+
+        // Disable button to prevent double-submit
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading file...';
+
+        // Serialize the File to a base64 DataURL so it survives page navigation
+        // (window globals are destroyed on every page load)
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            sessionStorage.setItem('resumeFileData', e.target.result);
+            sessionStorage.setItem('resumeFileName', uploadedFile.name);
+            sessionStorage.setItem('resumeFileType', uploadedFile.type || 'application/octet-stream');
+            window.location.href = 'resume_loading.html';
+        };
+        reader.onerror = function () {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">psychology</span> Analyze My Resume';
+            alert('Could not read the file. Please try again.');
+        };
+        reader.readAsDataURL(uploadedFile);
     }
 </script>
 </body>

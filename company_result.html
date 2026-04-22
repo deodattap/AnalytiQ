@@ -284,127 +284,44 @@
 </footer>
 
 <script>
-// ============================================================
-// KEYWORD MATCHING ENGINE
-// ============================================================
+// ── Load real backend result ──────────────────────────────────────────────────
+const raw = sessionStorage.getItem('matchResult');
+if (!raw) { window.location.href = 'company_input.html'; }
+const result = JSON.parse(raw);
 
-// Comprehensive skill vocabulary to scan job description against
-const SKILL_VOCAB = [
-    // Languages
-    'javascript','python','java','c++','c#','golang','rust','php','ruby','swift','kotlin','scala','typescript','r ',
-    // Frontend
-    'react','vue','angular','svelte','html','css','sass','scss','next.js','nuxt','gatsby','tailwind','bootstrap',
-    // Backend
-    'node.js','nodejs','express','django','flask','fastapi','spring','laravel','rails',
-    // Databases
-    'sql','mysql','postgresql','mongodb','redis','sqlite','nosql','firebase','elasticsearch','dynamodb',
-    // DevOps & Cloud
-    'docker','kubernetes','aws','azure','gcp','terraform','linux','ci/cd','jenkins','github actions','ansible',
-    // Tools & concepts
-    'git','github','rest api','graphql','microservices','agile','scrum','jira','system design',
-    // Data & ML
-    'machine learning','deep learning','tensorflow','pytorch','pandas','numpy','scikit','data analysis','tableau','power bi','excel',
-    // Design
-    'figma','sketch','adobe xd','photoshop','illustrator','user research','prototyping','wireframing',
-    'typography','design systems','ux design','ui design','responsive design','a/b testing','accessibility',
-    // Soft skills
-    'communication','teamwork','leadership','management','problem solving','critical thinking','collaboration',
-];
+const resumeFileName  = sessionStorage.getItem('resumeFileName') || result.filename || 'Resume.pdf';
+const score           = result.match_score || 0;
+const matchedSkills   = result.matched_skills || [];
+const missingSkills   = result.missing_skills || [];
+const recommendations = result.recommendations || [];
 
-// Simulated candidate profile — what the uploaded resume "contains"
-const CANDIDATE_SKILLS = [
-    'javascript','html','css','react','typescript','git','figma','user research',
-    'prototyping','wireframing','typography','design systems','responsive design',
-    'communication','teamwork','agile','node.js','rest api','sql',
-];
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-// ── Helpers ──────────────────────────────────────────────────
-function extractSkills(text) {
-    const lower = text.toLowerCase();
-    return SKILL_VOCAB.filter(skill => lower.includes(skill.toLowerCase().trim()));
-}
-
-function dedup(arr) {
-    return [...new Set(arr)];
-}
-
-function capitalize(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function computeMatch(jobSkills, candidateSkills) {
-    const can = candidateSkills.map(s => s.toLowerCase());
-    const matched = dedup(jobSkills.filter(s => can.includes(s.toLowerCase())));
-    const missing = dedup(jobSkills.filter(s => !can.includes(s.toLowerCase())));
-    const raw = jobSkills.length > 0 ? (matched.length / jobSkills.length) * 100 : 60;
-    const score = Math.round(Math.max(25, Math.min(95, raw)));
-    return { matched, missing, score };
-}
-
-function buildSections(score) {
+function buildSections(sc) {
     return [
-        { label: 'Technical Skills',  score: Math.min(98, score + 4),  color: 'soul-gradient-primary' },
-        { label: 'Work Experience',   score: Math.min(95, score + 12), color: 'soul-gradient-primary' },
-        { label: 'Education',         score: Math.min(95, score + 20), color: 'soul-gradient-primary' },
-        { label: 'Projects',          score: Math.max(20, score - 15), color: 'soul-gradient-tertiary' },
-        { label: 'Keyword Alignment', score: Math.max(15, score - 10), color: 'soul-gradient-secondary' },
+        { label: 'Technical Skills',  score: Math.min(98, sc + 4),  color: 'soul-gradient-primary' },
+        { label: 'Work Experience',   score: Math.min(95, sc + 12), color: 'soul-gradient-primary' },
+        { label: 'Education',         score: Math.min(95, sc + 20), color: 'soul-gradient-primary' },
+        { label: 'Projects',          score: Math.max(20, sc - 15), color: 'soul-gradient-tertiary' },
+        { label: 'Keyword Alignment', score: Math.max(15, sc - 10), color: 'soul-gradient-secondary' },
     ];
 }
 
-function buildSuggestions(missing, score) {
-    const TIPS = {
-        'docker':          { icon: 'settings',    text: 'Learn Docker basics — container knowledge is expected in most backend and full-stack roles.' },
-        'kubernetes':      { icon: 'hub',          text: 'Add Kubernetes fundamentals to your profile; it pairs well with Docker experience.' },
-        'python':          { icon: 'code',         text: 'Build a small Python script or data project — it opens doors to many backend and data roles.' },
-        'sql':             { icon: 'storage',      text: 'Practice SQL queries; database skills are expected in most tech interviews.' },
-        'machine learning':{ icon: 'psychology',  text: 'Complete an ML fundamentals course to stand out for data-heavy or AI roles.' },
-        'aws':             { icon: 'cloud',        text: 'Get AWS Cloud Practitioner certified — it\'s quick and widely recognised on resumes.' },
-        'azure':           { icon: 'cloud',        text: 'Azure fundamentals certification adds strong cloud credibility to your profile.' },
-        'ci/cd':           { icon: 'autorenew',   text: 'Add CI/CD experience (GitHub Actions or Jenkins) to show you understand modern delivery pipelines.' },
-        'typescript':      { icon: 'code',        text: 'TypeScript proficiency is increasingly required for React and Node.js roles.' },
-        'a/b testing':     { icon: 'science',      text: 'Include a case study demonstrating data-driven design decisions or A/B test results.' },
-    };
-    const out = [];
-    for (const skill of missing.slice(0, 3)) {
-        const key = skill.toLowerCase();
-        if (TIPS[key]) out.push(TIPS[key]);
-        else out.push({ icon: 'school', text: `Add "${capitalize(skill)}" to your resume with a relevant project or short certification.` });
-    }
-    // Always add a general ATS tip
-    out.push({ icon: 'tune', text: 'Mirror the exact keywords from the job description in your resume to maximise ATS pass-through rate.' });
-    if (score < 60) {
-        out.push({ icon: 'edit_note', text: 'Rewrite bullet points to highlight achievements that directly relate to the requirements listed in this job description.' });
-    }
-    return out.slice(0, 4);
-}
-
-// ── Read inputs & compute ─────────────────────────────────────
-const jobDescription = sessionStorage.getItem('jobDescription') || '';
-const resumeFileName  = sessionStorage.getItem('resumeFileName')  || 'Resume.pdf';
-
-const jobSkills = dedup(extractSkills(jobDescription));
-const { matched: matchedSkills, missing: missingSkills, score } = computeMatch(jobSkills, CANDIDATE_SKILLS);
-const sections    = buildSections(score);
-const suggestions = buildSuggestions(missingSkills, score);
-
-// Score label
-const scoreLabel = score >= 80 ? 'Excellent Match!'
-                 : score >= 65 ? 'Strong Foundation'
-                 : score >= 45 ? 'Partial Match'
-                 : 'Needs Work';
+const sections = buildSections(score);
+const scoreLabel = score >= 80 ? 'Excellent Match!' : score >= 65 ? 'Strong Foundation' : score >= 45 ? 'Partial Match' : 'Needs Work';
 const scoreSub   = score >= 80 ? 'Top match — apply with confidence'
                  : score >= 65 ? 'Minor gaps to close before applying'
                  : score >= 45 ? 'Close the gaps to improve your odds'
                  : 'Focus on the missing skills listed below';
 
-// ── RENDER ────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    // Update meta subtitle with filename and today's date
+    // Meta subtitle
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const metaEl = document.querySelector('main p.text-on-surface-variant.font-medium');
     if (metaEl) metaEl.innerHTML = `Analyzed on <strong>${today}</strong> · ${resumeFileName}`;
 
-    // Update score label text
+    // Score label
     const scoreCardEl = document.getElementById('scoreDisplay');
     if (scoreCardEl) {
         const card = scoreCardEl.closest('.glass-card');
@@ -445,23 +362,47 @@ window.addEventListener('DOMContentLoaded', () => {
         sections.forEach((s, i) => { document.getElementById('bar' + i).style.width = s.score + '%'; });
     }, 600);
 
-    // Matched skills — use detected or fall back to candidate defaults
+    // Matched skills
     const matchedContainer = document.getElementById('matchedSkills');
-    const showMatched = matchedSkills.length > 0 ? matchedSkills : CANDIDATE_SKILLS.slice(0, 6);
-    showMatched.forEach(s => {
-        matchedContainer.innerHTML += `<span class="tag-matched"><span class="material-symbols-outlined text-[13px]" style="color:#00803c">check_circle</span>${capitalize(s)}</span>`;
-    });
+    if (matchedSkills.length === 0) {
+        matchedContainer.innerHTML = '<span class="text-sm text-on-surface-variant font-medium">No common skills detected — tailor your resume to the job description.</span>';
+    } else {
+        matchedSkills.forEach(s => {
+            matchedContainer.innerHTML += `<span class="tag-matched"><span class="material-symbols-outlined text-[13px]" style="color:#00803c">check_circle</span>${capitalize(s)}</span>`;
+        });
+    }
 
-    // Missing skills — use detected or defaults
+    // Missing skills
     const missingContainer = document.getElementById('missingSkills');
-    const showMissing = missingSkills.length > 0 ? missingSkills : ['Docker', 'CI/CD', 'System Design', 'GraphQL'];
-    showMissing.forEach(s => {
-        missingContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${capitalize(s)}</span>`;
-    });
+    if (missingSkills.length === 0) {
+        missingContainer.innerHTML = '<span class="text-sm text-on-surface-variant font-medium">You match all detected skills! 🎉</span>';
+    } else {
+        missingSkills.forEach(s => {
+            missingContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${capitalize(s)}</span>`;
+        });
+    }
 
-    // Suggestions
+    // Suggestions from recommendations
     const sugContainer = document.getElementById('suggestions');
-    suggestions.forEach(s => {
+    const TIPS = {
+        'docker':           { icon: 'settings',   text: 'Learn Docker basics — container knowledge is expected in most backend and full-stack roles.' },
+        'kubernetes':       { icon: 'hub',         text: 'Add Kubernetes fundamentals to your profile; it pairs well with Docker experience.' },
+        'python':           { icon: 'code',        text: 'Build a small Python script or data project — it opens doors to many backend and data roles.' },
+        'sql':              { icon: 'storage',     text: 'Practice SQL queries; database skills are expected in most tech interviews.' },
+        'machine learning': { icon: 'psychology',  text: 'Complete an ML fundamentals course to stand out for data-heavy or AI roles.' },
+        'aws':              { icon: 'cloud',       text: 'Get AWS Cloud Practitioner certified — widely recognised on resumes.' },
+        'azure':            { icon: 'cloud',       text: 'Azure fundamentals certification adds strong cloud credibility to your profile.' },
+        'ci/cd':            { icon: 'autorenew',   text: 'Add CI/CD experience (GitHub Actions or Jenkins) to show modern delivery pipeline knowledge.' },
+        'typescript':       { icon: 'code',        text: 'TypeScript proficiency is increasingly required for React and Node.js roles.' },
+    };
+
+    const sugItems = missingSkills.slice(0, 3).map(skill => {
+        const t = TIPS[skill.toLowerCase()];
+        return t || { icon: 'school', text: `Add "${capitalize(skill)}" to your resume with a relevant project or short certification.` };
+    });
+    sugItems.push({ icon: 'tune', text: 'Mirror the exact keywords from the job description in your resume to maximise ATS pass-through rate.' });
+
+    sugItems.slice(0, 4).forEach(s => {
         sugContainer.innerHTML += `
         <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
             <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -472,5 +413,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
 </body>
 </html>
+

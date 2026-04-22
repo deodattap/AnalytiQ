@@ -391,10 +391,29 @@
     }
     function startAnalysis() {
         const jobDesc = document.getElementById('jobDesc').value.trim();
-        // Store inputs for result page keyword matching
+        if (!uploadedFile || !jobDesc) return;
+
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading file...';
+
+        // Store job description text (strings survive navigation fine)
         sessionStorage.setItem('jobDescription', jobDesc);
-        if (uploadedFile) sessionStorage.setItem('resumeFileName', uploadedFile.name);
-        window.location.href = 'company_loading.html';
+        sessionStorage.setItem('resumeFileName', uploadedFile.name);
+
+        // Serialize file to base64 so it survives navigation to loading page
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            sessionStorage.setItem('resumeFileData', e.target.result);
+            sessionStorage.setItem('resumeFileType', uploadedFile.type || 'application/octet-stream');
+            window.location.href = 'company_loading.html';
+        };
+        reader.onerror = function () {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Analyze Match';
+            alert('Could not read the file. Please try again.');
+        };
+        reader.readAsDataURL(uploadedFile);
     }
 </script>
 </body>
