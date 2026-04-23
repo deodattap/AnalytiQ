@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Company Match | Kinetic Mentor</title>
+<title>Shortlist Candidates | Kinetic Mentor</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -185,13 +185,13 @@
     <div class="text-center mb-12 space-y-4 relative z-10 animate-in delay-1">
         <span class="step-pill">
             <span class="material-symbols-outlined text-[13px]">business_center</span>
-            Company Match
+            Bulk Shortlisting
         </span>
         <h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-            Match with your <span class="text-transparent bg-clip-text soul-gradient-primary">dream role</span>
+            <span class="text-transparent bg-clip-text soul-gradient-primary">Shortlist Candidates</span>
         </h1>
         <p class="text-on-surface-variant text-base md:text-lg max-w-lg mx-auto font-medium leading-relaxed">
-            Upload your resume and paste the job description. We'll show you exactly how well you match.
+            Upload multiple resumes and paste the job description. We'll rank and shortlist the best profiles for you.
         </p>
     </div>
 
@@ -203,7 +203,7 @@
             <div class="space-y-4">
                 <label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">description</span>
-                    Your Resume
+                    Candidate Resumes
                 </label>
                 <div id="dropZone"
                      class="drop-zone rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer min-h-[220px] gap-4 relative"
@@ -229,7 +229,7 @@
                         </span>
                     </div>
 
-                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc" onchange="handleFileSelect(event)"/>
+                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc" multiple onchange="handleFileSelect(event)"/>
                 </div>
 
                 <!-- Upload progress -->
@@ -246,10 +246,23 @@
 
             <!-- Column 2: Job Description -->
             <div class="space-y-4 flex flex-col h-full">
-                <label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">work_history</span>
-                    Job Description
-                </label>
+                <div class="flex items-center justify-between">
+                    <label class="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">work_history</span>
+                        Job Details
+                    </label>
+                    <select id="roleSelect" onchange="autoFillRole()" class="bg-surface-container-low text-on-surface rounded-lg px-3 py-1.5 text-sm font-medium border-none outline-none focus:ring-1 focus:ring-primary cursor-pointer w-[140px]">
+                        <option value="">Custom Role</option>
+                        <option value="frontend">Frontend Eng</option>
+                        <option value="backend">Backend Eng</option>
+                        <option value="fullstack">Full Stack Eng</option>
+                        <option value="data">Data Science</option>
+                        <option value="devops">DevOps Eng</option>
+                        <option value="mobile">Mobile Eng</option>
+                        <option value="design">UI/UX Designer</option>
+                        <option value="product">Product Manager</option>
+                    </select>
+                </div>
                 <div class="flex-grow">
                     <textarea id="jobDesc"
                         class="w-full h-full min-h-[220px] p-5 bg-surface-container-low rounded-xl border-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all duration-300 resize-none font-body text-sm text-on-surface placeholder:text-on-surface-variant/50 outline-none"
@@ -264,7 +277,7 @@
             <button id="analyzeBtn" disabled onclick="startAnalysis()"
                 class="btn-analyze soul-gradient-primary text-on-primary font-headline font-bold text-lg px-12 py-5 rounded-full shadow-xl shadow-primary/30 flex items-center gap-3 w-full md:w-auto justify-center">
                 <span class="material-symbols-outlined">hub</span>
-                Analyze Match
+                Analyze Candidates
             </button>
             <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">bolt</span>
@@ -328,7 +341,7 @@
 </footer>
 
 <script>
-    let uploadedFile = null;
+    let uploadedFiles = [];
 
     function handleDragOver(e) {
         e.preventDefault();
@@ -340,15 +353,13 @@
     function handleDrop(e) {
         e.preventDefault();
         document.getElementById('dropZone').classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file) processFile(file);
+        if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
     }
     function handleFileSelect(e) {
-        const file = e.target.files[0];
-        if (file) processFile(file);
+        if (e.target.files.length > 0) processFiles(e.target.files);
     }
-    function processFile(file) {
-        uploadedFile = file;
+    function processFiles(files) {
+        uploadedFiles = uploadedFiles.concat(Array.from(files));
         const zone = document.getElementById('dropZone');
         zone.classList.add('has-file');
         document.getElementById('uploadText').classList.add('hidden');
@@ -356,7 +367,7 @@
         document.getElementById('uploadIcon').textContent = 'check_circle';
         document.getElementById('uploadIcon').style.color = '#005f98';
         document.getElementById('fileChip').classList.remove('hidden');
-        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileName').textContent = `${uploadedFiles.length} file(s) selected`;
 
         // Simulate upload progress
         let progress = 0;
@@ -372,7 +383,7 @@
     }
     function removeFile(e) {
         e.stopPropagation();
-        uploadedFile = null;
+        uploadedFiles = [];
         const zone = document.getElementById('dropZone');
         zone.classList.remove('has-file');
         document.getElementById('uploadText').classList.remove('hidden');
@@ -385,35 +396,38 @@
         checkForm();
     }
     function checkForm() {
-        const hasFile = uploadedFile !== null;
-        const hasDesc = document.getElementById('jobDesc').value.trim().length > 20;
+        const hasFile = uploadedFiles.length > 0;
+        const hasDesc = document.getElementById('jobDesc').value.trim().length > 0;
         document.getElementById('analyzeBtn').disabled = !(hasFile && hasDesc);
     }
     function startAnalysis() {
         const jobDesc = document.getElementById('jobDesc').value.trim();
-        if (!uploadedFile || !jobDesc) return;
+        if (uploadedFiles.length === 0 || !jobDesc) return;
 
         const btn = document.getElementById('analyzeBtn');
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading file...';
+        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading files...';
 
         // Store job description text (strings survive navigation fine)
         sessionStorage.setItem('jobDescription', jobDesc);
-        sessionStorage.setItem('resumeFileName', uploadedFile.name);
+        sessionStorage.setItem('resumeFileNames', JSON.stringify(uploadedFiles.map(f => f.name)));
+        
+        window.location.href = 'company_loading.html';
+    }
 
-        // Serialize file to base64 so it survives navigation to loading page
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            sessionStorage.setItem('resumeFileData', e.target.result);
-            sessionStorage.setItem('resumeFileType', uploadedFile.type || 'application/octet-stream');
-            window.location.href = 'company_loading.html';
-        };
-        reader.onerror = function () {
-            btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Analyze Match';
-            alert('Could not read the file. Please try again.');
-        };
-        reader.readAsDataURL(uploadedFile);
+    function autoFillRole() {
+        const val = document.getElementById('roleSelect').value;
+        const jd = document.getElementById('jobDesc');
+        if (val === 'frontend') jd.value = "Required Skills: React, JavaScript, TypeScript, CSS, HTML. Experience: 3 years. Required Degree: Computer Science.";
+        else if (val === 'backend') jd.value = "Required Skills: Node.js, Python, AWS, Docker, Kubernetes, SQL. Experience: 5 years. Required Degree: Computer Science.";
+        else if (val === 'fullstack') jd.value = "Required Skills: React, Node.js, TypeScript, SQL, Docker, AWS. Experience: 4 years. Required Degree: Computer Science.";
+        else if (val === 'data') jd.value = "Required Skills: Python, Machine Learning, SQL, Pandas, NumPy. Experience: 4 years. Required Degree: Bachelors in IT.";
+        else if (val === 'devops') jd.value = "Required Skills: AWS, Docker, Kubernetes, CI/CD, Linux, Jenkins. Experience: 4 years. Required Degree: IT or related.";
+        else if (val === 'mobile') jd.value = "Required Skills: Swift, Kotlin, Mobile Architecture, Firebase, REST API. Experience: 3 years. Required Degree: Computer Science.";
+        else if (val === 'design') jd.value = "Required Skills: Figma, UI/UX, Design Systems, Wireframing, User Research. Experience: 2 years. Required Degree: Design or related.";
+        else if (val === 'product') jd.value = "Required Skills: Agile, Scrum, Communication, Leadership, Problem Solving. Experience: 5 years. Required Degree: MBA or equivalent.";
+        else jd.value = "";
+        checkForm();
     }
 </script>
 </body>

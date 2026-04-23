@@ -20,11 +20,32 @@ SKILLS = [
 ]
 
 SECTION_KEYWORDS = {
-    'skills':      ['skill','technologies','tech stack','tools','proficiencies','competencies','expertise'],
-    'experience':  ['experience','employment','work history','professional','internship','intern','position','role','job'],
-    'education':   ['education','degree','university','college','bachelor','master','phd','diploma','academic','school'],
-    'projects':    ['project','built','developed','created','portfolio','github','application','app','system','website'],
-    'summary':     ['summary','objective','profile','about','overview','career goal'],
+    'skills': [
+        'skill', 'technical skill', 'core skill', 'key skill', 'technology',
+        'tech stack', 'competency', 'competencies', 'proficiency', 'proficiencies',
+        'tools', 'languages', 'frameworks', 'expertise', 'technical expertise',
+    ],
+    'experience': [
+        'experience', 'work experience', 'professional experience', 'employment',
+        'work history', 'internship', 'internships', 'training', 'industrial training',
+        'apprenticeship', 'position', 'role', 'job', 'career', 'occupation',
+    ],
+    'education': [
+        'education', 'academic', 'qualification', 'degree', 'bachelor', 'master',
+        'phd', 'diploma', 'university', 'college', 'school', 'b.tech', 'b.e',
+        'm.tech', 'mba', 'bsc', 'msc', 'b.sc', 'm.sc', 'graduation',
+    ],
+    'projects': [
+        'project', 'academic project', 'personal project', 'key project',
+        'portfolio', 'work sample', 'built', 'developed', 'created', 'designed',
+        'implemented', 'github', 'application', 'app', 'system', 'website',
+    ],
+    'summary': [
+        'summary', 'objective', 'career objective', 'profile', 'about me',
+        'professional summary', 'my goal', 'as a ', 'i aim to', 'i am a',
+        'motivated', 'seeking to', 'apply my skills', 'looking for opportunit',
+        'overview', 'career goal', 'professional profile',
+    ],
 }
 
 SKILL_META = {
@@ -48,6 +69,24 @@ SKILL_META = {
     'postgresql':       {'emoji':'🐘','bg':'linear-gradient(135deg,#336791,#1a3a5c)'},
     'figma':            {'emoji':'🎨','bg':'linear-gradient(135deg,#f24e1e,#a259ff)'},
     'graphql':          {'emoji':'💡','bg':'linear-gradient(135deg,#e10098,#7b0055)'},
+    'go':               {'emoji':'🐹','bg':'linear-gradient(135deg,#00add8,#007d9c)'},
+    'rust':             {'emoji':'🦀','bg':'linear-gradient(135deg,#dea584,#b7410e)'},
+    'ruby':             {'emoji':'💎','bg':'linear-gradient(135deg,#cc342d,#8a0e05)'},
+    'php':              {'emoji':'🐘','bg':'linear-gradient(135deg,#777bb4,#4f5b93)'},
+    'swift':            {'emoji':'🐦','bg':'linear-gradient(135deg,#f05138,#d1341c)'},
+    'kotlin':           {'emoji':'🤖','bg':'linear-gradient(135deg,#7f52ff,#d91fae)'},
+    'c++':              {'emoji':'⚙️','bg':'linear-gradient(135deg,#00599c,#004482)'},
+    'angular':          {'emoji':'🅰️','bg':'linear-gradient(135deg,#dd0031,#c3002f)'},
+    'vue':              {'emoji':'🟩','bg':'linear-gradient(135deg,#4fc08d,#35495e)'},
+    'redis':            {'emoji':'🔴','bg':'linear-gradient(135deg,#d82c20,#9c1c14)'},
+    'firebase':         {'emoji':'🔥','bg':'linear-gradient(135deg,#ffca28,#f57c00)'},
+    'html':             {'emoji':'🌐','bg':'linear-gradient(135deg,#e34f26,#b53f1d)'},
+    'css':              {'emoji':'🎨','bg':'linear-gradient(135deg,#1572b6,#1b5585)'},
+    'tailwind':         {'emoji':'🌊','bg':'linear-gradient(135deg,#38b2ac,#2c7a7b)'},
+    'pandas':           {'emoji':'🐼','bg':'linear-gradient(135deg,#150458,#090226)'},
+    'numpy':            {'emoji':'🔢','bg':'linear-gradient(135deg,#4d77cf,#013220)'},
+    'jenkins':          {'emoji':'👨‍🍳','bg':'linear-gradient(135deg,#d33833,#335061)'},
+    'gcp':              {'emoji':'☁️','bg':'linear-gradient(135deg,#4285f4,#0f9d58)'}
 }
 DEFAULT_META = {'emoji':'🛠️','bg':'linear-gradient(135deg,#005f98,#2aa7ff)'}
 
@@ -80,10 +119,25 @@ def detect_skills(text):
     return list(dict.fromkeys(found))  # deduplicate preserving order
 
 def detect_sections(text):
+    """Detect which resume sections are present using keyword matching + heuristics."""
     lower = text.lower()
     found = {}
+
     for section, keywords in SECTION_KEYWORDS.items():
         found[section] = any(kw in lower for kw in keywords)
+
+    # ── Summary heuristic ────────────────────────────────────────────────────
+    # Many resumes open with a profile paragraph WITHOUT a section heading.
+    # If the first 150 words contain a sentence of 20+ consecutive words,
+    # treat it as a summary to avoid false 'missing summary' suggestions.
+    if not found['summary']:
+        top_words = text.split()[:150]
+        top_text  = ' '.join(top_words)
+        # Split on punctuation that ends sentences
+        sentences = re.split(r'[.!?\n]', top_text)
+        if any(len(s.split()) >= 20 for s in sentences):
+            found['summary'] = True
+
     return found
 
 def validate_resume(text):

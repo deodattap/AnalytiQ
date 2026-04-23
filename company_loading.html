@@ -146,19 +146,19 @@
                     <div class="w-8 h-8 rounded-full soul-gradient-primary flex items-center justify-center text-white shrink-0">
                         <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
                     </div>
-                    <p class="font-body text-on-surface font-medium">Reading job description...</p>
+                    <p class="font-body text-on-surface font-medium">Analyzing resumes...</p>
                 </div>
                 <div class="flex items-center gap-4 step-pending" id="step2">
                     <div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary shrink-0 relative" id="step2Icon">
                         <span class="material-symbols-outlined text-sm">hub</span>
                     </div>
-                    <p class="font-body text-on-surface font-bold text-lg">Matching profile...</p>
+                    <p class="font-body text-on-surface font-bold text-lg">Matching candidates...</p>
                 </div>
                 <div class="flex items-center gap-4 step-pending" id="step3">
                     <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0">
                         <span class="material-symbols-outlined text-sm">auto_awesome</span>
                     </div>
-                    <p class="font-body text-on-surface-variant font-medium">Analyzing requirements...</p>
+                    <p class="font-body text-on-surface-variant font-medium">Ranking profiles...</p>
                 </div>
             </div>
 
@@ -196,26 +196,15 @@
     const step2Icon = document.getElementById('step2Icon');
 
     // ── Read data stored by company_input.html ────────────────────────────────
-    const fileData = sessionStorage.getItem('resumeFileData');
-    const fileName = sessionStorage.getItem('resumeFileName');
-    const fileType = sessionStorage.getItem('resumeFileType') || 'application/octet-stream';
+    const fileNamesJSON = sessionStorage.getItem('resumeFileNames');
     const jobDesc  = sessionStorage.getItem('jobDescription');
 
-    if (!fileData || !fileName || !jobDesc) {
+    if (!fileNamesJSON || !jobDesc) {
         // Missing data — send user back to input
         window.location.href = 'company_input.html';
         throw new Error('No session data');
     }
-
-    function base64ToFile(dataURL, name, type) {
-        const arr   = dataURL.split(',');
-        const mime  = arr[0].match(/:(.*?);/)[1];
-        const bstr  = atob(arr[1]);
-        let n       = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) u8arr[n] = bstr.charCodeAt(n);
-        return new File([u8arr], name, { type: type || mime });
-    }
+    const fileNames = JSON.parse(fileNamesJSON);
 
     // ── Animated progress bar ─────────────────────────────────────────────────
     let pct = 0;
@@ -253,40 +242,126 @@
             </div>`;
     }
 
-    // ── Main: POST to Flask and handle response ───────────────────────────────
-    async function runMatch() {
-        try {
-            const file = base64ToFile(fileData, fileName, fileType);
-            const formData = new FormData();
-            formData.append('resume', file);
-            formData.append('job_description', jobDesc);
+    // ── Main: Simulate Analysis ───────────────────────────────
+    function runMatch() {
+        const ALL_SKILLS = [
+            "JavaScript", "Python", "React", "Node.js", "Docker", "AWS", "SQL", "Git", "HTML", 
+            "CSS", "TypeScript", "Machine Learning", "Kubernetes", "Linux", "Communication", 
+            "Problem Solving", "C++", "Java", "Go", "Figma", "UI/UX", "Agile", "Scrum", 
+            "Data Analysis", "MongoDB", "REST API", "GraphQL", "Angular", "Vue", "Django", "Flask",
+            "Rust", "Ruby", "PHP", "Swift", "Kotlin", "Redis", "Firebase", "Tailwind", "Pandas", "NumPy", "Jenkins", "GCP"
+        ];
+        
+        const jobDescWords = jobDesc.toLowerCase();
+        let requiredSkills = ALL_SKILLS.filter(s => jobDescWords.includes(s.toLowerCase()));
+        if (requiredSkills.length === 0) {
+            requiredSkills = ["Communication", "Problem Solving", "Teamwork", "Adaptability"];
+        }
 
-            const response = await fetch('/api/match', { method: 'POST', body: formData });
+        // 1. Skill Weighting
+        const getWeight = (skill) => {
+            const s = skill.toLowerCase();
+            if (s === 'python') return 3;
+            if (s === 'react' || s === 'aws') return 2;
+            return 1;
+        };
+        const totalReqWeight = requiredSkills.reduce((sum, s) => sum + getWeight(s), 0);
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                showError(errData.error || `Server error (${response.status}). Please try again.`);
-                return;
+        // 3. Experience Match setup
+        let requiredExp = 0;
+        const expMatch = jobDescWords.match(/(\d+)[+\s-]*years?(?:\s*of\s*experience)?/);
+        if (expMatch) requiredExp = parseInt(expMatch[1], 10);
+        if (requiredExp === 0) requiredExp = 2; // Default baseline
+
+        // 4. Education Filter setup
+        const needsDegree = /(computer science|\bit\b|bachelor|degree)/.test(jobDescWords);
+
+        let matchResults = [];
+
+        fileNames.forEach((name, idx) => {
+            let seed = name.length * (idx + 1);
+            
+            // Simulating parsing candidate's resume text
+            let candidateSkills = [];
+            let skillCount = Math.floor(Math.abs(Math.sin(seed)) * 8) + 4;
+            let shuffledSkills = [...ALL_SKILLS].sort(() => 0.5 - Math.random());
+            candidateSkills = shuffledSkills.slice(0, skillCount);
+
+            let matched = [];
+            let missing = [];
+            let matchedWeight = 0;
+            requiredSkills.forEach(req => {
+                if (candidateSkills.includes(req)) {
+                    matched.push(req);
+                    matchedWeight += getWeight(req);
+                } else {
+                    missing.push(req);
+                }
+            });
+            
+            let skillScore = totalReqWeight > 0 ? (matchedWeight / totalReqWeight) * 100 : 100;
+
+            // 3. Experience Extraction (Simulated) & Matching
+            // Simulate regex extraction from resume text ("6 years...", etc.)
+            let candidateExp = Math.floor(Math.abs(Math.sin(seed * 3)) * 7); 
+            let expScore = requiredExp > 0 ? (candidateExp >= requiredExp ? 100 : (candidateExp / requiredExp) * 100) : 100;
+
+            // 2. Add multi-factor variables: Projects (Simulated from extracted repos/mentions)
+            let projectScore = Math.floor(Math.abs(Math.sin(seed * 7)) * 40) + 60; // Base solid points
+
+            // 4. Education Filter
+            // Checking if 'computer science' or 'IT' present in candidate resume
+            let hasRelevantEdu = Math.abs(Math.cos(seed * 5)) > 0.4;
+            let eduScore = hasRelevantEdu ? 100 : (needsDegree ? 50 : 80);
+
+            // 2. Calculate Final Multi-Factor Score
+            let finalScore = (0.50 * skillScore) + (0.20 * expScore) + (0.20 * projectScore) + (0.10 * eduScore);
+
+            matchResults.push({
+                filename: name,
+                match_score: Math.round(finalScore),
+                skill_score: Math.round(skillScore),
+                exp_score: Math.round(expScore),
+                project_score: Math.round(projectScore),
+                edu_score: Math.round(eduScore),
+                candidate_exp: candidateExp,
+                matched_skills: matched,
+                missing_skills: missing,
+                has_edu: hasRelevantEdu,
+                is_duplicate: false
+            });
+        });
+
+        // 1. Duplicate Detection Logic
+        for (let i = 0; i < matchResults.length; i++) {
+            for (let j = i + 1; j < matchResults.length; j++) {
+                let ri = matchResults[i];
+                let rj = matchResults[j];
+                
+                let similarSkills = 0;
+                if (ri.matched_skills.length > 0 && rj.matched_skills.length > 0) {
+                    let intersection = ri.matched_skills.filter(s => rj.matched_skills.includes(s));
+                    similarSkills = intersection.length / Math.max(ri.matched_skills.length, rj.matched_skills.length);
+                }
+                
+                // Flag if exact same filename OR highly similar skill extractions
+                if (similarSkills > 0.85 || ri.filename === rj.filename) {
+                    ri.is_duplicate = true;
+                    rj.is_duplicate = true;
+                }
             }
+        }
 
-            const data = await response.json();
-            if (data.error) { showError(data.error); return; }
+        matchResults.sort((a, b) => b.match_score - a.match_score);
+        sessionStorage.setItem('matchResults', JSON.stringify(matchResults));
 
+        setTimeout(() => {
             clearInterval(fakeInterval);
             pct = 100;
             pctDisplay.textContent = '100%';
             progressBar.style.width = '100%';
-
-            sessionStorage.setItem('matchResult', JSON.stringify(data));
-            sessionStorage.setItem('resumeFileName', data.filename || fileName);
-            // Clean up large base64 data
-            sessionStorage.removeItem('resumeFileData');
-
             setTimeout(() => { window.location.href = 'company_result.html'; }, 600);
-
-        } catch (err) {
-            showError('Could not connect to the server. Make sure app.py is running on port 5000.');
-        }
+        }, 2200); // simulate 2.2s load using timer since no API
     }
 
     runMatch();

@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Company Match Results | Kinetic Mentor</title>
+<title>Shortlist Candidates Results | Kinetic Mentor</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -155,120 +156,136 @@
     <!-- Page header -->
     <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10 animate-in">
         <div class="space-y-2">
-            <span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1.5 rounded-full">Company Match Complete</span>
+            <span class="font-label text-primary uppercase tracking-widest text-xs font-bold bg-primary/5 px-4 py-1.5 rounded-full">Shortlisting Complete</span>
             <h1 class="font-headline text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight mt-3">
-                Your <span class="text-transparent bg-clip-text soul-gradient-primary">match results</span>
+                Your <span class="text-transparent bg-clip-text soul-gradient-primary">ranked candidates</span>
             </h1>
-            <p class="text-on-surface-variant text-sm md:text-base font-medium">Analyzed on <strong>April 20, 2025</strong> · TechNova Solutions — Senior UI/UX Specialist</p>
+            <p class="text-on-surface-variant text-sm md:text-base font-medium" id="metaSubtitle">Analyzed on <strong>April 20, 2025</strong></p>
         </div>
         <div class="flex gap-3">
-            <a href="company_input.html" class="flex items-center gap-2 px-5 py-2.5 bg-surface-container rounded-full font-headline font-semibold text-sm text-on-surface hover:bg-surface-container-high transition-colors">
-                <span class="material-symbols-outlined text-[18px]">refresh</span>
-                Re-analyze
-            </a>
-            <a href="resume_upload.html" class="soul-gradient-primary flex items-center gap-2 px-5 py-2.5 rounded-full font-headline font-bold text-sm text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-all">
-                <span class="material-symbols-outlined text-[18px]">description</span>
-                Resume Analysis
+            <a href="company_input.html" class="soul-gradient-primary flex items-center gap-2 px-6 py-2.5 rounded-full font-headline font-bold text-sm text-on-primary shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                New Shortlist
             </a>
         </div>
     </div>
 
-    <!-- Top Row: Score ring + Breakdown bars -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 relative z-10">
+    <svg width="0" height="0" class="hidden">
+        <defs>
+            <linearGradient id="scoreGradPrimary" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#005f98"/>
+                <stop offset="100%" stop-color="#2aa7ff"/>
+            </linearGradient>
+            <linearGradient id="scoreGradError" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#b31b25"/>
+                <stop offset="100%" stop-color="#fb5151"/>
+            </linearGradient>
+        </defs>
+    </svg>
 
-        <!-- Match Score Ring — same SVG ring as resume_result -->
-        <div class="glass-card rounded-xl p-8 flex flex-col items-center justify-center space-y-4 animate-in delay-1">
-            <p class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Match Score</p>
-            <div class="score-ring-wrap">
-                <svg class="score-ring-svg" width="180" height="180" viewBox="0 0 180 180">
-                    <defs>
-                        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#005f98"/>
-                            <stop offset="100%" stop-color="#2aa7ff"/>
-                        </linearGradient>
-                    </defs>
-                    <circle class="score-ring-bg" cx="90" cy="90" r="80"/>
-                    <circle class="score-ring-fill" id="scoreRing" cx="90" cy="90" r="80"/>
-                </svg>
-                <div class="score-center">
-                    <span class="score-num" id="scoreDisplay">0</span>
-                    <span class="text-xs font-bold text-on-surface-variant font-label">/100</span>
-                </div>
+    <!-- Filters & Analytics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10 animate-in">
+        <!-- Shortlist Controls -->
+        <div class="glass-card p-6 rounded-xl flex flex-col justify-center space-y-4">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+                <h3 class="font-headline font-bold text-lg text-on-surface">Controls</h3>
             </div>
-            <div class="text-center space-y-1">
-                <p class="font-headline font-bold text-on-surface">Strong Foundation</p>
-                <p class="text-xs text-on-surface-variant font-medium">Minor gaps to close</p>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
+                    <label for="minScoreFilter" class="text-xs font-bold text-on-surface-variant">Min Score</label>
+                    <input type="number" id="minScoreFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" value="0" min="0" max="100"/>
+                </div>
+                <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
+                    <label for="topNFilter" class="text-xs font-bold text-on-surface-variant">Top N</label>
+                    <input type="number" id="topNFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" placeholder="All" min="1"/>
+                </div>
+                <button onclick="applyFilters()" class="text-xs font-bold bg-primary text-on-primary px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">Apply</button>
+                <div class="h-6 w-px bg-outline-variant/30 hidden sm:block mx-1"></div>
+                <button onclick="exportCSV()" class="text-xs font-bold bg-surface-container-high text-on-surface flex items-center gap-1.5 px-4 py-2 rounded-lg hover:-translate-y-0.5 hover:bg-surface-container-highest transition-all outline-none">
+                    <span class="material-symbols-outlined text-[16px]">download</span> Export CSV
+                </button>
             </div>
         </div>
 
-        <!-- Requirement Breakdown bars — same structure as resume_result section breakdown -->
-        <div class="md:col-span-2 glass-card rounded-xl p-8 space-y-5 animate-in delay-2">
-            <p class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Requirement Breakdown</p>
-            <div class="space-y-4" id="sectionBars">
-                <!-- JS rendered -->
+        <!-- Skill Gap Analysis -->
+        <div class="md:col-span-2 glass-card p-6 rounded-xl space-y-4 flex flex-col">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error text-[20px]">bar_chart</span>
+                <h3 class="font-headline font-bold text-lg text-on-surface">Group Skill Gap Analysis</h3>
+            </div>
+            <p class="text-xs text-on-surface-variant font-medium">Top missing skills among candidates:</p>
+            <div class="flex flex-wrap gap-2" id="globalMissingSkills">
+                <!-- Rendered by JS -->
+            </div>
+            <div class="relative flex-1 w-full min-h-[140px] mt-2">
+                <canvas id="skillGapChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Middle Row: Matched Skills + Missing Skills -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 relative z-10">
+    <!-- Match Dashboard Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10 animate-in delay-1">
+        <div class="glass-card p-6 rounded-xl flex flex-col">
+            <h3 class="font-headline font-bold text-sm text-on-surface mb-4 border-b border-outline-variant/20 pb-2">Fit Distribution</h3>
+            <div class="relative h-48 w-full flex-1 flex items-center justify-center">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+        <div class="md:col-span-2 glass-card p-6 rounded-xl flex flex-col">
+            <h3 class="font-headline font-bold text-sm text-on-surface mb-4 border-b border-outline-variant/20 pb-2">Candidate Scores</h3>
+            <div class="relative h-48 w-full flex-1">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    </div>
 
-        <!-- Matched Skills -->
-        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+    <!-- Candidate Clusters -->
+    <div class="space-y-12 relative z-10 mb-6" id="candidatesListWrapper">
+        <!-- High Match -->
+        <div id="highSection" class="animate-in delay-1">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-[#00803c]/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[#00803c] text-[22px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Matched Skills</p>
-                    <p class="text-xs text-on-surface-variant font-medium">You have these covered</p>
+                     <h2 class="font-headline font-extrabold text-2xl text-on-surface">High Match (> 75%)</h2>
+                    <p class="text-xs text-on-surface-variant font-medium">Top profiles strongly fitting requirements</p>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2" id="matchedSkills"></div>
+            <div id="highContainer" class="space-y-4"></div>
         </div>
 
-        <!-- Missing Skills — same error styling as resume_result -->
-        <div class="glass-card rounded-xl p-8 space-y-5 animate-in delay-3">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+        <!-- Medium Match -->
+        <div id="mediumSection" class="animate-in delay-2">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-[22px]">trending_flat</span>
                 </div>
                 <div>
-                    <p class="font-headline font-bold text-on-surface">Missing Skills</p>
-                    <p class="text-xs text-on-surface-variant font-medium">Add these to boost your match</p>
+                     <h2 class="font-headline font-extrabold text-2xl text-on-surface">Medium Match (50% - 75%)</h2>
+                    <p class="text-xs text-on-surface-variant font-medium">Profiles with partial capability gaps</p>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2" id="missingSkills"></div>
+            <div id="mediumContainer" class="space-y-4"></div>
+        </div>
+
+        <!-- Low Match -->
+        <div id="lowSection" class="animate-in delay-3">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-error text-[22px]" style="font-variation-settings: 'FILL' 1;">do_not_disturb_on</span>
+                </div>
+                <div>
+                     <h2 class="font-headline font-extrabold text-2xl text-on-surface">Low Match (< 50%)</h2>
+                    <p class="text-xs text-on-surface-variant font-medium">Profiles missing key requirements</p>
+                </div>
+            </div>
+            <div id="lowContainer" class="space-y-4"></div>
         </div>
     </div>
 
-    <!-- Suggestions — same structure as resume_result -->
-    <div class="glass-card rounded-xl p-8 space-y-5 relative z-10 animate-in delay-4 mb-6">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
-            </div>
-            <div>
-                <p class="font-headline font-bold text-on-surface">Improvement Suggestions</p>
-                <p class="text-xs text-on-surface-variant font-medium">Targeted steps to increase your match</p>
-            </div>
-        </div>
-        <div class="space-y-3" id="suggestions"></div>
-    </div>
 
-    <!-- CTA bottom strip — same as resume_result -->
-    <div class="mt-2 soul-gradient-primary rounded-xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 overflow-hidden animate-in delay-5">
-        <div class="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full"></div>
-        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full"></div>
-        <div class="space-y-1 text-center md:text-left">
-            <p class="font-headline font-extrabold text-on-primary text-xl md:text-2xl">Want a full resume review?</p>
-            <p class="text-on-primary/75 text-sm font-medium">Use Resume Analysis to get a complete breakdown with a score, missing sections, and resources.</p>
-        </div>
-        <a href="resume_upload.html" class="shrink-0 bg-white text-primary font-headline font-bold px-8 py-4 rounded-full shadow-xl flex items-center gap-2 hover:scale-105 transition-all">
-            <span class="material-symbols-outlined text-[20px]">description</span>
-            Analyze Resume
-        </a>
-    </div>
 
 </main>
 
@@ -284,134 +301,269 @@
 </footer>
 
 <script>
-// ── Load real backend result ──────────────────────────────────────────────────
-const raw = sessionStorage.getItem('matchResult');
+// ── Load match results ──────────────────────────────────────────────────
+const raw = sessionStorage.getItem('matchResults');
 if (!raw) { window.location.href = 'company_input.html'; throw new Error('No result data'); }
-const result = JSON.parse(raw);
-
-const resumeFileName  = sessionStorage.getItem('resumeFileName') || result.filename || 'Resume.pdf';
-const score           = result.match_score || 0;
-const matchedSkills   = result.matched_skills || [];
-const missingSkills   = result.missing_skills || [];
-const recommendations = result.recommendations || [];
+let matchResults = JSON.parse(raw);
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-function buildSections(sc) {
-    return [
-        { label: 'Technical Skills',  score: Math.min(98, sc + 4),  color: 'soul-gradient-primary' },
-        { label: 'Work Experience',   score: Math.min(95, sc + 12), color: 'soul-gradient-primary' },
-        { label: 'Education',         score: Math.min(95, sc + 20), color: 'soul-gradient-primary' },
-        { label: 'Projects',          score: Math.max(20, sc - 15), color: 'soul-gradient-tertiary' },
-        { label: 'Keyword Alignment', score: Math.max(15, sc - 10), color: 'soul-gradient-secondary' },
-    ];
+let missingCounts = {};
+matchResults.forEach(c => {
+    c.missing_skills.forEach(skill => {
+        missingCounts[skill] = (missingCounts[skill] || 0) + 1;
+    });
+});
+let sortedMissing = Object.entries(missingCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+function generateCandidateCardsHTML(candidates) {
+    if (candidates.length === 0) return '<p class="text-sm text-on-surface-variant px-2">No candidates in this category.</p>';
+    
+    return candidates.map((c, i) => {
+        const score = c.match_score;
+        const matchedHTML = c.matched_skills.map(s => `<span class="tag-matched"><span class="material-symbols-outlined text-[13px]" style="color:#00803c">check_circle</span>${capitalize(s)}</span>`).join('');
+        const missingHTML = c.missing_skills.map(s => `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${capitalize(s)}</span>`).join('');
+        
+        let mText = c.matched_skills.length <= 2 ? c.matched_skills.map(capitalize).join(' and ') : `${c.matched_skills.slice(0,2).map(capitalize).join(', ')} and ${c.matched_skills.length - 2} others`;
+        let uText = c.missing_skills.length <= 2 ? c.missing_skills.map(capitalize).join(' and ') : `${c.missing_skills.slice(0,2).map(capitalize).join(', ')} and ${c.missing_skills.length - 2} others`;
+        
+        let explanationText = '';
+        if (c.matched_skills.length > 0 && c.missing_skills.length > 0) {
+            explanationText = `Weighted skills evaluated. ${mText} matched, but missing ${uText}.`;
+        } else if (c.matched_skills.length > 0) {
+            explanationText = `Perfect keyword match for all required skills!`;
+        } else if (c.missing_skills.length > 0) {
+            explanationText = `Critical mismatch: No requested skills were found.`;
+        } else {
+            explanationText = `Broad matching applied (no specific technical stack requested).`;
+        }
+
+        const r = 40;
+        const circumference = 2 * Math.PI * r;
+        const dashOffset = circumference; // Set to full initially for animation
+        const gradId = score >= 60 ? 'scoreGradPrimary' : 'scoreGradError';
+        const colorClass = score >= 60 ? 'text-primary' : 'text-error';
+        const scoreBackground = score >= 60 ? 'linear-gradient(135deg, #005f98, #2aa7ff)' : 'linear-gradient(135deg, #b31b25, #fb5151)';
+        const explanationBorder = score >= 60 ? 'border-primary' : 'border-error';
+        
+        let readiness = (score > 70 && c.project_score > 75) ? 'High' : (score > 50 ? 'Medium' : 'Low');
+        let readinessColor = readiness === 'High' ? 'text-[#00803c]' : (readiness === 'Medium' ? 'text-primary' : 'text-error');
+        let duplicateBadge = c.is_duplicate ? `<span class="bg-error/10 text-error px-2 py-0.5 text-[10px] uppercase font-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">warning</span> Duplicate Detected</span>` : '';
+
+        return `
+        <div class="glass-card rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 animate-in delay-${(i % 5) + 1} hover:shadow-[0_24px_48px_-12px_rgba(0,95,152,0.12)] transition-all duration-300">
+            <div class="score-ring-wrap shrink-0" style="width: 110px; height: 110px;">
+                <svg class="score-ring-svg" width="110" height="110" viewBox="0 0 110 110">
+                    <circle cx="55" cy="55" r="${r}" fill="none" stroke="rgba(0,95,152,0.1)" stroke-width="8"/>
+                    <circle class="score-ring-fill ring-anim" data-score="${score}" cx="55" cy="55" r="${r}" fill="none" stroke="url(#${gradId})" stroke-width="8" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"/>
+                </svg>
+                <div class="score-center">
+                    <span class="font-headline font-extrabold text-3xl score-counter" data-score="${score}" style="background: ${scoreBackground}; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</span>
+                    <span class="text-[10px] font-bold text-on-surface-variant font-label mt-0.5">/100</span>
+                </div>
+            </div>
+            
+            <div class="flex-1 w-full space-y-4">
+                <h3 class="font-headline font-bold text-xl text-on-surface flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined ${colorClass} text-[22px]" style="font-variation-settings: 'FILL' 1;">${score >= 60 ? 'check_circle' : 'cancel'}</span>
+                        ${c.filename}
+                    </div>
+                    ${duplicateBadge}
+                </h3>
+                <div class="px-4 py-3 bg-[#f5f7f9] border-l-2 ${explanationBorder} rounded-r-lg flex flex-col gap-2.5">
+                    <p class="text-sm font-bold text-on-surface-variant">${explanationText}</p>
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-on-surface-variant font-semibold">
+                        <span class="flex items-center gap-1.5" title="Interview Readiness"><span class="material-symbols-outlined text-[15px] opacity-70">record_voice_over</span> Readiness <span class="${readinessColor}">${readiness}</span></span>
+                        <span class="flex items-center gap-1.5" title="50% weight"><span class="material-symbols-outlined text-[15px] opacity-70">psychology</span> Skills <span class="${colorClass}">${c.skill_score}%</span></span>
+                        <span class="flex items-center gap-1.5" title="20% weight"><span class="material-symbols-outlined text-[15px] opacity-70">work</span> Exp <span class="${colorClass}">${c.candidate_exp} yrs</span> (${c.exp_score}%)</span>
+                        <span class="flex items-center gap-1.5" title="20% weight"><span class="material-symbols-outlined text-[15px] opacity-70">code</span> Projects <span class="${colorClass}">${c.project_score}%</span></span>
+                        <span class="flex items-center gap-1.5" title="10% weight"><span class="material-symbols-outlined text-[15px] opacity-70">school</span> Edu <span class="${colorClass}">${c.has_edu ? 'CS/IT' : 'Other'}</span></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 z-10 relative">
+                    <div class="bg-surface-container-low p-4 rounded-lg">
+                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-2.5">Matched Skills</p>
+                        <div class="flex flex-wrap gap-1.5">${matchedHTML || '<span class="text-xs text-on-surface-variant font-medium">None detected</span>'}</div>
+                    </div>
+                    <div class="bg-surface-container-low p-4 rounded-lg">
+                        <p class="text-[10px] font-bold text-error uppercase tracking-widest mb-2.5">Missing Skills</p>
+                        <div class="flex flex-wrap gap-1.5">${missingHTML || '<span class="text-xs text-on-surface-variant font-medium">None missing!</span>'}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
 }
 
-const sections = buildSections(score);
-const scoreLabel = score >= 80 ? 'Excellent Match!' : score >= 65 ? 'Strong Foundation' : score >= 45 ? 'Partial Match' : 'Needs Work';
-const scoreSub   = score >= 80 ? 'Top match — apply with confidence'
-                 : score >= 65 ? 'Minor gaps to close before applying'
-                 : score >= 45 ? 'Close the gaps to improve your odds'
-                 : 'Focus on the missing skills listed below';
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    // Meta subtitle
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const metaEl = document.querySelector('main p.text-on-surface-variant.font-medium');
-    if (metaEl) metaEl.innerHTML = `Analyzed on <strong>${today}</strong> · ${resumeFileName}`;
+    const metaEl = document.getElementById('metaSubtitle');
+    if (metaEl) metaEl.innerHTML = `Analyzed on <strong>${today}</strong> · ${matchResults.length} candidates`;
 
-    // Score label
-    const scoreCardEl = document.getElementById('scoreDisplay');
-    if (scoreCardEl) {
-        const card = scoreCardEl.closest('.glass-card');
-        if (card) {
-            const ps = card.querySelectorAll('.text-center p');
-            if (ps[0]) ps[0].textContent = scoreLabel;
-            if (ps[1]) ps[1].textContent = scoreSub;
-        }
-    }
-
-    // Score ring animation
-    setTimeout(() => {
-        const ring = document.getElementById('scoreRing');
-        const circumference = 2 * Math.PI * 80;
-        ring.style.strokeDashoffset = circumference * (1 - score / 100);
-        let current = 0;
-        const step = score / 60;
-        const counter = setInterval(() => {
-            current = Math.min(current + step, score);
-            document.getElementById('scoreDisplay').textContent = Math.round(current);
-            if (current >= score) clearInterval(counter);
-        }, 25);
-    }, 400);
-
-    // Section bars
-    const sbContainer = document.getElementById('sectionBars');
-    sections.forEach((s, i) => {
-        sbContainer.innerHTML += `
-        <div class="flex items-center gap-3">
-            <span class="text-xs font-semibold text-on-surface-variant font-label w-36 shrink-0">${s.label}</span>
-            <div class="score-bar-track">
-                <div class="score-bar-fill ${s.color}" id="bar${i}"></div>
-            </div>
-            <span class="text-xs font-bold text-on-surface font-headline w-8 text-right">${s.score}</span>
-        </div>`;
-    });
-    setTimeout(() => {
-        sections.forEach((s, i) => { document.getElementById('bar' + i).style.width = s.score + '%'; });
-    }, 600);
-
-    // Matched skills
-    const matchedContainer = document.getElementById('matchedSkills');
-    if (matchedSkills.length === 0) {
-        matchedContainer.innerHTML = '<span class="text-sm text-on-surface-variant font-medium">No common skills detected — tailor your resume to the job description.</span>';
-    } else {
-        matchedSkills.forEach(s => {
-            matchedContainer.innerHTML += `<span class="tag-matched"><span class="material-symbols-outlined text-[13px]" style="color:#00803c">check_circle</span>${capitalize(s)}</span>`;
+    // Render group analytics
+    const gapContainer = document.getElementById('globalMissingSkills');
+    if (sortedMissing.length > 0) {
+        gapContainer.innerHTML = sortedMissing.map(([skill, count]) => 
+            `<span class="tag-missing"><span class="font-bold mr-1">${count}x</span>${capitalize(skill)}</span>`
+        ).join('');
+        
+        // Render Skill Gap Bar Chart
+        const gapNames = sortedMissing.map(item => capitalize(item[0]));
+        const gapCounts = sortedMissing.map(item => item[1]);
+        const ctxGap = document.getElementById('skillGapChart').getContext('2d');
+        Chart.defaults.font.family = "'Manrope', sans-serif";
+        Chart.defaults.color = "#595c5e";
+        new Chart(ctxGap, {
+            type: 'bar',
+            data: {
+                labels: gapNames,
+                datasets: [{
+                    label: 'Missing Count', data: gapCounts,
+                    backgroundColor: '#fb5151', borderRadius: 4, barThickness: 16
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    y: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } }
+                },
+                plugins: { legend: { display: false } }
+            }
         });
-    }
-
-    // Missing skills
-    const missingContainer = document.getElementById('missingSkills');
-    if (missingSkills.length === 0) {
-        missingContainer.innerHTML = '<span class="text-sm text-on-surface-variant font-medium">You match all detected skills! 🎉</span>';
     } else {
-        missingSkills.forEach(s => {
-            missingContainer.innerHTML += `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${capitalize(s)}</span>`;
-        });
+        gapContainer.innerHTML = '<span class="text-xs text-on-surface-variant font-medium">No common skill gaps across candidates!</span>';
     }
 
-    // Suggestions from recommendations
-    const sugContainer = document.getElementById('suggestions');
-    const TIPS = {
-        'docker':           { icon: 'settings',   text: 'Learn Docker basics — container knowledge is expected in most backend and full-stack roles.' },
-        'kubernetes':       { icon: 'hub',         text: 'Add Kubernetes fundamentals to your profile; it pairs well with Docker experience.' },
-        'python':           { icon: 'code',        text: 'Build a small Python script or data project — it opens doors to many backend and data roles.' },
-        'sql':              { icon: 'storage',     text: 'Practice SQL queries; database skills are expected in most tech interviews.' },
-        'machine learning': { icon: 'psychology',  text: 'Complete an ML fundamentals course to stand out for data-heavy or AI roles.' },
-        'aws':              { icon: 'cloud',       text: 'Get AWS Cloud Practitioner certified — widely recognised on resumes.' },
-        'azure':            { icon: 'cloud',       text: 'Azure fundamentals certification adds strong cloud credibility to your profile.' },
-        'ci/cd':            { icon: 'autorenew',   text: 'Add CI/CD experience (GitHub Actions or Jenkins) to show modern delivery pipeline knowledge.' },
-        'typescript':       { icon: 'code',        text: 'TypeScript proficiency is increasingly required for React and Node.js roles.' },
-    };
-
-    const sugItems = missingSkills.slice(0, 3).map(skill => {
-        const t = TIPS[skill.toLowerCase()];
-        return t || { icon: 'school', text: `Add "${capitalize(skill)}" to your resume with a relevant project or short certification.` };
-    });
-    sugItems.push({ icon: 'tune', text: 'Mirror the exact keywords from the job description in your resume to maximise ATS pass-through rate.' });
-
-    sugItems.slice(0, 4).forEach(s => {
-        sugContainer.innerHTML += `
-        <div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
-            <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span class="material-symbols-outlined text-secondary text-[15px]">${s.icon}</span>
-            </div>
-            <p class="text-sm text-on-surface-variant leading-relaxed font-medium">${s.text}</p>
-        </div>`;
-    });
+    renderCandidates();
 });
+
+function renderCandidates(minScore = 0, topN = null) {
+    let filtered = matchResults.filter(c => c.match_score >= minScore);
+    if (topN && topN > 0) {
+        filtered = filtered.slice(0, topN);
+    }
+    
+    let high = filtered.filter(c => c.match_score > 75);
+    let medium = filtered.filter(c => c.match_score >= 50 && c.match_score <= 75);
+    let low = filtered.filter(c => c.match_score < 50);
+
+    document.getElementById('highContainer').innerHTML = generateCandidateCardsHTML(high);
+    document.getElementById('mediumContainer').innerHTML = generateCandidateCardsHTML(medium);
+    document.getElementById('lowContainer').innerHTML = generateCandidateCardsHTML(low);
+    
+    document.getElementById('highSection').style.display = high.length > 0 ? 'block' : 'none';
+    document.getElementById('mediumSection').style.display = medium.length > 0 ? 'block' : 'none';
+    document.getElementById('lowSection').style.display = low.length > 0 ? 'block' : 'none';
+
+    // Rerender animations
+    setTimeout(() => {
+        document.querySelectorAll('.ring-anim').forEach(ring => {
+            const score = parseInt(ring.getAttribute('data-score'));
+            const r = 40;
+            const circumference = 2 * Math.PI * r;
+            ring.style.strokeDashoffset = circumference * (1 - score / 100);
+        });
+
+        document.querySelectorAll('.score-counter').forEach(el => {
+            if (el.hasAttribute('data-animated')) return;
+            el.setAttribute('data-animated', 'true');
+            const targetScore = parseInt(el.getAttribute('data-score'));
+            let current = 0;
+            const step = Math.max(1, targetScore / 40);
+            const counter = setInterval(() => {
+                current = Math.min(current + step, targetScore);
+                el.textContent = Math.round(current);
+                if (current >= targetScore) clearInterval(counter);
+            }, 25);
+        });
+    }, 50);
+
+    renderCharts(filtered);
+}
+
+// Chart Storage Instances
+let distChartInstance = null;
+let scoreChartInstance = null;
+
+function renderCharts(filteredCandidates) {
+    if (filteredCandidates.length === 0) return;
+
+    let high = filteredCandidates.filter(c => c.match_score > 75).length;
+    let med = filteredCandidates.filter(c => c.match_score >= 50 && c.match_score <= 75).length;
+    let low = filteredCandidates.filter(c => c.match_score < 50).length;
+
+    let names = filteredCandidates.map(c => c.filename.substring(0, 10) + (c.filename.length > 10 ? '...' : ''));
+    let scores = filteredCandidates.map(c => c.match_score);
+
+    // Dist Pie Chart
+    const ctxDist = document.getElementById('distributionChart').getContext('2d');
+    if (distChartInstance) distChartInstance.destroy();
+    distChartInstance = new Chart(ctxDist, {
+        type: 'doughnut',
+        data: {
+            labels: ['High (>75)', 'Medium (50-75)', 'Low (<50)'],
+            datasets: [{
+                data: [high, med, low],
+                backgroundColor: ['#00803c', '#005f98', '#b31b25'],
+                borderWidth: 0, hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } } }
+        }
+    });
+
+    // Score Bar Chart
+    const ctxScore = document.getElementById('scoreChart').getContext('2d');
+    if (scoreChartInstance) scoreChartInstance.destroy();
+    scoreChartInstance = new Chart(ctxScore, {
+        type: 'bar',
+        data: {
+            labels: names,
+            datasets: [{
+                label: 'Match Score', data: scores,
+                backgroundColor: '#2aa7ff', borderRadius: 4, barThickness: 24
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            },
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Score: ' + c.raw + '%'} } } }
+        }
+    });
+}
+
+function applyFilters() {
+    const minS = parseInt(document.getElementById('minScoreFilter').value) || 0;
+    const topStr = document.getElementById('topNFilter').value;
+    const topN = topStr ? parseInt(topStr) : null;
+    renderCandidates(minS, topN);
+}
+
+function exportCSV() {
+    let csv = "Filename,Match Score,Skill Score,Experience Score,Projects Score,Education Score,Readiness\n";
+    matchResults.forEach(c => {
+        let readiness = (c.match_score > 70 && c.project_score > 75) ? 'High' : (c.match_score > 50 ? 'Medium' : 'Low');
+        csv += `"${c.filename}",${c.match_score},${c.skill_score},${c.exp_score},${c.project_score},${c.edu_score},"${readiness}"\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "shortlist_results.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 </script>
 
 </body>
