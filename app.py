@@ -1,6 +1,16 @@
 import os, re, math
+import numpy as np
+import pandas as pd
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from sklearn.cluster import KMeans
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics.pairwise import cosine_similarity
+try:
+    from mlxtend.frequent_patterns import apriori, association_rules
+except ImportError:
+    apriori = None
+    association_rules = None
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
@@ -258,6 +268,9 @@ def match():
     if not jd_skills:
         jd_skills = set(detect_skills(job_desc.lower()))
 
+    candidate_skill_vectors = []
+    candidate_features = [] # for decision tree: [score, num_matched]
+
     for file in files:
         if file.filename == '':
             continue
@@ -286,6 +299,11 @@ def match():
         
         match_score = round(max(15, min(95, match_score)))
 
+        # Skill vector for clustering (based on global SKILLS list)
+        vector = [1 if skill in resume_skills else 0 for skill in SKILLS]
+        candidate_skill_vectors.append(vector)
+        candidate_features.append([match_score, len(matched_skills)])
+
         # Extra metrics for the UI
         skill_score = min(100, len(detected_skills) * 5)
         proj_score  = 85 if sections.get('projects') else 20
@@ -310,11 +328,78 @@ def match():
             'missing_skills':  missing_skills,
             'recommendations': recommendations,
             'total_jd_skills': total_jd,
+            'skills_list':     list(resume_skills) # for apriori
         })
+
+    # --- DSBD ENHANCEMENTS ---
+    if results:
+        # 1. Clustering (KMeans)
+        if len(results) >= 3:
+            n_clusters = min(4, len(results))
+            kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init='auto')
+            cluster_labels = kmeans.fit_predict(candidate_skill_vectors)
+            
+            # Simple mapping logic for clusters
+            cluster_map = {0: "Frontend Focused", 1: "Backend Focused", 2: "Balanced Profile", 3: "Entry Level"}
+            for i, res in enumerate(results):
+                res['cluster'] = cluster_map.get(cluster_labels[i], "Other")
+        else:
+            for res in results: res['cluster'] = "General Profile"
+
+        # 2. Classification (Decision Tree)
+        # We need some dummy data to "train" if we don't have enough, or just use it if we have enough.
+        # For simplicity, we'll train a small tree on the current batch.
+        if len(results) >= 3:
+            # Synthetic labels for training a classifier on the fly (Simple heuristic)
+            train_labels = []
+            for feat in candidate_features:
+                if feat[0] > 80: train_labels.append("Strong Match")
+                elif feat[0] > 50: train_labels.append("Moderate Match")
+                else: train_labels.append("Low Match")
+            
+            dt = DecisionTreeClassifier(max_depth=3)
+            dt.fit(candidate_features, train_labels)
+            pred_labels = dt.predict(candidate_features)
+            for i, res in enumerate(results):
+                res['classification'] = pred_labels[i]
+        else:
+            for res in results:
+                res['classification'] = "Strong Match" if res['match_score'] > 75 else ("Moderate Match" if res['match_score'] > 40 else "Low Match")
+
+        # 3. Association Rules (Apriori)
+        final_rules = []
+        if apriori and len(results) >= 2:
+            try:
+                # Convert skill lists to a boolean DataFrame
+                all_candidate_skills = [res['skills_list'] for res in results]
+                unique_skills = sorted(list(set([s for sublist in all_candidate_skills for s in sublist])))
+                
+                skill_df = pd.DataFrame([{s: (s in c_skills) for s in unique_skills} for c_skills in all_candidate_skills])
+                
+                frequent_itemsets = apriori(skill_df, min_support=0.3, use_colnames=True)
+                if not frequent_itemsets.empty:
+                    rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.7)
+                    for _, row in rules.iterrows():
+                        ant = list(row['antecedents'])[0]
+                        con = list(row['consequents'])[0]
+                        conf = round(row['confidence'] * 100)
+                        final_rules.append(f"{ant} → {con} ({conf}%)")
+            except Exception:
+                pass
+
+        # 4. Recommendation (Cosine Similarity)
+        if len(results) >= 2:
+            sim_matrix = cosine_similarity(candidate_skill_vectors)
+            for i, res in enumerate(results):
+                similar_indices = sim_matrix[i].argsort()[::-1][1:3] # Top 2 similar excluding self
+                res['similar_candidates'] = [results[idx]['filename'] for idx in similar_indices if sim_matrix[i][idx] > 0.5]
+        else:
+            for res in results: res['similar_candidates'] = []
 
     return jsonify({
         'results': results,
-        'job_description': job_desc
+        'job_description': job_desc,
+        'association_rules': final_rules[:5] # Return top 5 rules
     })
 
 

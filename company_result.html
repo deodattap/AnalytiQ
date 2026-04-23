@@ -218,6 +218,13 @@
             <div class="flex flex-wrap gap-2" id="globalMissingSkills">
                 <!-- Rendered by JS -->
             </div>
+            <div id="associationRulesWrapper" class="hidden mt-4 space-y-2">
+                <p class="text-xs text-on-surface-variant font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">link</span>
+                    Skill Associations (Apriori):
+                </p>
+                <div class="flex flex-wrap gap-2" id="associationRulesList"></div>
+            </div>
             <div class="relative flex-1 w-full min-h-[140px] mt-2">
                 <canvas id="skillGapChart"></canvas>
             </div>
@@ -351,6 +358,11 @@ function generateCandidateCardsHTML(candidates) {
         let readinessColor = readiness === 'High' ? 'text-[#00803c]' : (readiness === 'Medium' ? 'text-primary' : 'text-error');
         let duplicateBadge = c.is_duplicate ? `<span class="bg-error/10 text-error px-2 py-0.5 text-[10px] uppercase font-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">warning</span> Duplicate Detected</span>` : '';
 
+        // DSBD Badges
+        const classificationBadge = c.classification ? `<span class="bg-primary/10 text-primary px-2 py-0.5 text-[10px] uppercase font-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">analytics</span> ${c.classification}</span>` : '';
+        const clusterBadge = c.cluster ? `<span class="bg-secondary/10 text-secondary px-2 py-0.5 text-[10px] uppercase font-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">group_work</span> ${c.cluster}</span>` : '';
+        const similarInfo = (c.similar_candidates && c.similar_candidates.length > 0) ? `<p class="text-[10px] text-on-surface-variant font-medium mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">handshake</span> Similar to: ${c.similar_candidates.join(', ')}</p>` : '';
+
         return `
         <div class="glass-card rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 animate-in delay-${(i % 5) + 1} hover:shadow-[0_24px_48px_-12px_rgba(0,95,152,0.12)] transition-all duration-300">
             <div class="score-ring-wrap shrink-0" style="width: 110px; height: 110px;">
@@ -365,15 +377,20 @@ function generateCandidateCardsHTML(candidates) {
             </div>
             
             <div class="flex-1 w-full space-y-4">
-                <h3 class="font-headline font-bold text-xl text-on-surface flex items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined ${colorClass} text-[22px]" style="font-variation-settings: 'FILL' 1;">${score >= 60 ? 'check_circle' : 'cancel'}</span>
-                        ${c.filename}
-                    </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-headline font-bold text-xl text-on-surface flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined ${colorClass} text-[22px]" style="font-variation-settings: 'FILL' 1;">${score >= 60 ? 'check_circle' : 'cancel'}</span>
+                            ${c.filename}
+                        </div>
+                    </h3>
+                    ${classificationBadge}
+                    ${clusterBadge}
                     ${duplicateBadge}
-                </h3>
+                </div>
                 <div class="px-4 py-3 bg-[#f5f7f9] border-l-2 ${explanationBorder} rounded-r-lg flex flex-col gap-2.5">
                     <p class="text-sm font-bold text-on-surface-variant">${explanationText}</p>
+                    ${similarInfo}
                     <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-on-surface-variant font-semibold">
                         <span class="flex items-center gap-1.5" title="Interview Readiness"><span class="material-symbols-outlined text-[15px] opacity-70">record_voice_over</span> Readiness <span class="${readinessColor}">${readiness}</span></span>
                         <span class="flex items-center gap-1.5" title="50% weight"><span class="material-symbols-outlined text-[15px] opacity-70">psychology</span> Skills <span class="${colorClass}">${c.skill_score}%</span></span>
@@ -438,6 +455,16 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     } else {
         gapContainer.innerHTML = '<span class="text-xs text-on-surface-variant font-medium">No common skill gaps across candidates!</span>';
+    }
+
+    // Render Association Rules
+    const rulesContainer = document.getElementById('associationRulesList');
+    const rulesWrapper = document.getElementById('associationRulesWrapper');
+    if (data.association_rules && data.association_rules.length > 0) {
+        rulesWrapper.classList.remove('hidden');
+        rulesContainer.innerHTML = data.association_rules.map(rule => 
+            `<span class="tag-suggest" style="font-size:10px; padding:3px 10px;">${rule}</span>`
+        ).join('');
     }
 
     renderCandidates();

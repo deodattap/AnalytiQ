@@ -2,3 +2,7 @@ flask
 flask-cors
 pdfplumber
 python-docx
+scikit-learn
+pandas
+numpy
+mlxtend

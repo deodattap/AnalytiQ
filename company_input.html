@@ -274,7 +274,7 @@
 
         <!-- CTA -->
         <div class="flex flex-col items-center gap-4 pt-2">
-            <button id="analyzeBtn" disabled onclick="startAnalysis()"
+            <button id="analyzeBtn" disabled
                 class="btn-analyze soul-gradient-primary text-on-primary font-headline font-bold text-lg px-12 py-5 rounded-full shadow-xl shadow-primary/30 flex items-center gap-3 w-full md:w-auto justify-center">
                 <span class="material-symbols-outlined">hub</span>
                 Analyze Candidates
@@ -413,7 +413,8 @@
         const hasDesc = document.getElementById('jobDesc').value.trim().length > 0;
         document.getElementById('analyzeBtn').disabled = !(hasFile && hasDesc);
     }
-    async function startAnalysis() {
+    document.getElementById('analyzeBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
         const jobDesc = document.getElementById('jobDesc').value.trim();
         if (uploadedFiles.length === 0 || !jobDesc) {
             alert("Please upload at least one resume and provide a job description.");
@@ -431,6 +432,7 @@
         });
 
         try {
+            console.log("Sending POST request to /api/match...");
             const response = await fetch('/api/match', {
                 method: 'POST',
                 body: formData
@@ -442,16 +444,17 @@
             }
 
             const data = await response.json();
+            console.log("Response received successfully.");
             // Store the results for the results page
             sessionStorage.setItem('matchResults', JSON.stringify(data));
             window.location.href = 'company_result.html';
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Fetch Error:", error);
             alert("Error: " + error.message);
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Analyze Candidates';
         }
-    }
+    });
 
     function autoFillRole() {
         const val = document.getElementById('roleSelect').value;
