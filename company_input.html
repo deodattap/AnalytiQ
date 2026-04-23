@@ -360,24 +360,40 @@
     }
     function processFiles(files) {
         uploadedFiles = uploadedFiles.concat(Array.from(files));
-        const zone = document.getElementById('dropZone');
-        zone.classList.add('has-file');
-        document.getElementById('uploadText').classList.add('hidden');
-        document.getElementById('uploadIconWrap').classList.remove('bounce-idle');
-        document.getElementById('uploadIcon').textContent = 'check_circle';
-        document.getElementById('uploadIcon').style.color = '#005f98';
-        document.getElementById('fileChip').classList.remove('hidden');
-        document.getElementById('fileName').textContent = `${uploadedFiles.length} file(s) selected`;
+        
+        // Reset file input so same file can be uploaded again if needed, 
+        // and more importantly, to keep the input ready for the next batch.
+        document.getElementById('fileInput').value = "";
 
-        // Simulate upload progress
+        const zone = document.getElementById('dropZone');
+        // We don't want to hide the upload text anymore, we want "Continuous Upload"
+        // zone.classList.add('has-file'); // We can keep this for styling if it doesn't hide elements
+        
+        document.getElementById('fileChip').classList.remove('hidden');
+        document.getElementById('fileName').textContent = `${uploadedFiles.length} file(s) uploaded`;
+
+        // Reset the upload icon and text to original state for continuous experience
+        document.getElementById('uploadText').classList.remove('hidden');
+        document.getElementById('uploadIconWrap').classList.add('bounce-idle');
+        document.getElementById('uploadIcon').textContent = 'upload_file';
+        document.getElementById('uploadIcon').style.color = '';
+
+        // Simulate upload progress for visual feedback
         let progress = 0;
         document.getElementById('uploadProgress').classList.remove('hidden');
         const interval = setInterval(() => {
-            progress += Math.random() * 18 + 8;
-            if (progress >= 100) { progress = 100; clearInterval(interval); }
+            progress += Math.random() * 25 + 15;
+            if (progress >= 100) { 
+                progress = 100; 
+                clearInterval(interval);
+                setTimeout(() => {
+                    document.getElementById('uploadProgress').classList.add('hidden');
+                    document.getElementById('progressFill').style.width = '0%';
+                }, 1000);
+            }
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
-        }, 120);
+        }, 100);
 
         checkForm();
     }
@@ -386,9 +402,6 @@
         uploadedFiles = [];
         const zone = document.getElementById('dropZone');
         zone.classList.remove('has-file');
-        document.getElementById('uploadText').classList.remove('hidden');
-        document.getElementById('uploadIconWrap').classList.add('bounce-idle');
-        document.getElementById('uploadIcon').textContent = 'upload_file';
         document.getElementById('fileChip').classList.add('hidden');
         document.getElementById('uploadProgress').classList.add('hidden');
         document.getElementById('progressFill').style.width = '0%';
@@ -400,19 +413,44 @@
         const hasDesc = document.getElementById('jobDesc').value.trim().length > 0;
         document.getElementById('analyzeBtn').disabled = !(hasFile && hasDesc);
     }
-    function startAnalysis() {
+    async function startAnalysis() {
         const jobDesc = document.getElementById('jobDesc').value.trim();
-        if (uploadedFiles.length === 0 || !jobDesc) return;
+        if (uploadedFiles.length === 0 || !jobDesc) {
+            alert("Please upload at least one resume and provide a job description.");
+            return;
+        }
 
         const btn = document.getElementById('analyzeBtn');
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading files...';
+        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Analyzing...';
 
-        // Store job description text (strings survive navigation fine)
-        sessionStorage.setItem('jobDescription', jobDesc);
-        sessionStorage.setItem('resumeFileNames', JSON.stringify(uploadedFiles.map(f => f.name)));
-        
-        window.location.href = 'company_loading.html';
+        const formData = new FormData();
+        formData.append("job_description", jobDesc);
+        uploadedFiles.forEach(file => {
+            formData.append("files", file);
+        });
+
+        try {
+            const response = await fetch('/api/match', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Analysis failed");
+            }
+
+            const data = await response.json();
+            // Store the results for the results page
+            sessionStorage.setItem('matchResults', JSON.stringify(data));
+            window.location.href = 'company_result.html';
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error: " + error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Analyze Candidates';
+        }
     }
 
     function autoFillRole() {

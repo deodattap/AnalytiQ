@@ -304,7 +304,8 @@
 // ── Load match results ──────────────────────────────────────────────────
 const raw = sessionStorage.getItem('matchResults');
 if (!raw) { window.location.href = 'company_input.html'; throw new Error('No result data'); }
-let matchResults = JSON.parse(raw);
+let data = JSON.parse(raw);
+let matchResults = data.results || [];
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 

@@ -416,7 +416,7 @@
 
 <script>
 // ── Load real backend result ──────────────────────────────────────────────────
-const raw = sessionStorage.getItem('analyzeResult');
+const raw = sessionStorage.getItem('resumeAnalysisResult');
 if (!raw) { window.location.href = 'resume_upload.html'; throw new Error('No result data'); }
 const result = JSON.parse(raw);
 

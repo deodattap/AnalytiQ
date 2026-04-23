@@ -324,7 +324,7 @@
 </footer>
 
 <script>
-    let uploadedFile = null;
+    let uploadedFiles = [];
 
     function handleDragOver(e) {
         e.preventDefault();
@@ -336,72 +336,93 @@
     function handleDrop(e) {
         e.preventDefault();
         document.getElementById('dropZone').classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file) processFile(file);
+        if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
     }
     function handleFileSelect(e) {
-        const file = e.target.files[0];
-        if (file) processFile(file);
+        if (e.target.files.length > 0) processFiles(e.target.files);
     }
-    function processFile(file) {
-        uploadedFile = file;
+    function processFiles(files) {
+        uploadedFiles = uploadedFiles.concat(Array.from(files));
+        
+        // Reset file input for continuous upload
+        document.getElementById('fileInput').value = "";
+
         const zone = document.getElementById('dropZone');
-        zone.classList.add('has-file');
-        document.getElementById('uploadText').classList.add('hidden');
-        document.getElementById('uploadIconWrap').classList.remove('bounce-idle');
-        document.getElementById('uploadIcon').textContent = 'check_circle';
-        document.getElementById('uploadIcon').style.color = '#005f98';
+        // zone.classList.add('has-file'); // Keep the subtle background
+        
+        document.getElementById('uploadText').classList.remove('hidden');
+        document.getElementById('uploadIconWrap').classList.add('bounce-idle');
+        document.getElementById('uploadIcon').textContent = 'upload_file';
+        document.getElementById('uploadIcon').style.color = '';
+        
         document.getElementById('fileChip').classList.remove('hidden');
-        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileName').textContent = `${uploadedFiles.length} file(s) uploaded`;
         document.getElementById('analyzeBtn').disabled = false;
 
         // Simulate upload progress
         let progress = 0;
         document.getElementById('uploadProgress').classList.remove('hidden');
         const interval = setInterval(() => {
-            progress += Math.random() * 18 + 8;
-            if (progress >= 100) { progress = 100; clearInterval(interval); }
+            progress += Math.random() * 25 + 15;
+            if (progress >= 100) { 
+                progress = 100; 
+                clearInterval(interval);
+                setTimeout(() => {
+                    document.getElementById('uploadProgress').classList.add('hidden');
+                    document.getElementById('progressFill').style.width = '0%';
+                }, 1000);
+            }
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
-        }, 120);
+        }, 100);
     }
     function removeFile(e) {
         e.stopPropagation();
-        uploadedFile = null;
+        uploadedFiles = [];
         const zone = document.getElementById('dropZone');
         zone.classList.remove('has-file');
-        document.getElementById('uploadText').classList.remove('hidden');
-        document.getElementById('uploadIconWrap').classList.add('bounce-idle');
-        document.getElementById('uploadIcon').textContent = 'upload_file';
         document.getElementById('fileChip').classList.add('hidden');
         document.getElementById('uploadProgress').classList.add('hidden');
         document.getElementById('progressFill').style.width = '0%';
         document.getElementById('analyzeBtn').disabled = true;
         document.getElementById('fileInput').value = '';
     }
-    function startAnalysis() {
-        if (!uploadedFile) return;
+    async function startAnalysis() {
+        if (uploadedFiles.length === 0) return;
 
-        // Disable button to prevent double-submit
         const btn = document.getElementById('analyzeBtn');
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Reading file...';
+        btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Analyzing...';
 
-        // Serialize the File to a base64 DataURL so it survives page navigation
-        // (window globals are destroyed on every page load)
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            sessionStorage.setItem('resumeFileData', e.target.result);
-            sessionStorage.setItem('resumeFileName', uploadedFile.name);
-            sessionStorage.setItem('resumeFileType', uploadedFile.type || 'application/octet-stream');
-            window.location.href = 'resume_loading.html';
-        };
-        reader.onerror = function () {
+        // For the single resume analysis, we'll take the first file if multiple were uploaded,
+        // or we could adapt the backend to handle multiple for analysis too.
+        // But the current UI for results (resume_result.html) is designed for ONE resume.
+        // So we'll process the first one for now, as per the existing app logic.
+        const file = uploadedFiles[0];
+
+        const formData = new FormData();
+        formData.append("resume", file);
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Analysis failed");
+            }
+
+            const data = await response.json();
+            sessionStorage.setItem('resumeAnalysisResult', JSON.stringify(data));
+            window.location.href = 'resume_result.html';
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error: " + error.message);
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined">psychology</span> Analyze My Resume';
-            alert('Could not read the file. Please try again.');
-        };
-        reader.readAsDataURL(uploadedFile);
+        }
     }
 </script>
 </body>

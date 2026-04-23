@@ -241,45 +241,80 @@ def analyze():
 def match():
     if request.method != 'POST':
         return jsonify({'error': 'Method not allowed. Use POST.'}), 405
-    if 'resume' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
+    
+    files = request.files.getlist('files')
+    if not files:
+        return jsonify({'error': 'No files uploaded'}), 400
+        
     if 'job_description' not in request.form:
         return jsonify({'error': 'No job description provided'}), 400
 
-    file = request.files['resume']
     job_desc = request.form['job_description']
+    if not job_desc.strip():
+        return jsonify({'error': 'Empty job description'}), 400
 
-    text = extract_text(file)
-    if not text.strip():
-        return jsonify({'error': 'Could not extract text from the resume file.'}), 422
-
-    resume_skills = set(detect_skills(text))
-    jd_skills     = set(detect_skills(job_desc))
-
+    results = []
+    jd_skills = set(detect_skills(job_desc))
     if not jd_skills:
-        # Fallback: extract any recognizable nouns from JD
         jd_skills = set(detect_skills(job_desc.lower()))
 
-    matched_skills = sorted(resume_skills & jd_skills)
-    missing_skills = sorted(jd_skills - resume_skills)
-    total_jd = len(jd_skills)
+    for file in files:
+        if file.filename == '':
+            continue
+            
+        text = extract_text(file)
+        if not text.strip():
+            results.append({
+                'filename': file.filename,
+                'error': 'Could not extract text'
+            })
+            continue
 
-    if total_jd > 0:
-        raw_score = (len(matched_skills) / total_jd) * 100
-    else:
-        raw_score = 50
+        sections = detect_sections(text)
+        detected_skills = detect_skills(text)
+        
+        # Match against JD
+        resume_skills = set(detected_skills)
+        matched_skills = sorted(resume_skills & jd_skills)
+        missing_skills = sorted(jd_skills - resume_skills)
+        total_jd = len(jd_skills)
 
-    match_score = round(max(15, min(95, raw_score)))
+        if total_jd > 0:
+            match_score = (len(matched_skills) / total_jd) * 100
+        else:
+            match_score = 50
+        
+        match_score = round(max(15, min(95, match_score)))
 
-    recommendations = build_recommendations(missing_skills)
+        # Extra metrics for the UI
+        skill_score = min(100, len(detected_skills) * 5)
+        proj_score  = 85 if sections.get('projects') else 20
+        exp_score   = 85 if sections.get('experience') else 15
+        has_edu     = sections.get('education', False)
+        
+        # Heuristic for years of experience (very basic: count occurrences of "year" or "yr")
+        exp_matches = re.findall(r'(\d+)\s*(?:year|yr)', text.lower())
+        candidate_exp = max([int(m) for m in exp_matches] + [0]) if exp_matches else 1
+
+        recommendations = build_recommendations(missing_skills)
+
+        results.append({
+            'filename':        file.filename,
+            'match_score':     match_score,
+            'skill_score':     skill_score,
+            'project_score':   proj_score,
+            'exp_score':       exp_score,
+            'candidate_exp':   candidate_exp,
+            'has_edu':         has_edu,
+            'matched_skills':  matched_skills,
+            'missing_skills':  missing_skills,
+            'recommendations': recommendations,
+            'total_jd_skills': total_jd,
+        })
 
     return jsonify({
-        'match_score':     match_score,
-        'matched_skills':  matched_skills,
-        'missing_skills':  missing_skills,
-        'recommendations': recommendations,
-        'filename':        file.filename,
-        'total_jd_skills': total_jd,
+        'results': results,
+        'job_description': job_desc
     })
 
 
