@@ -247,6 +247,28 @@
         </div>
     </div>
 
+    <!-- Cluster Distribution Chart -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10 animate-in delay-2">
+        <div class="glass-card p-6 rounded-xl flex flex-col">
+            <div class="flex items-center gap-2 mb-4 border-b border-outline-variant/20 pb-2">
+                <span class="material-symbols-outlined text-secondary text-[18px]">group_work</span>
+                <h3 class="font-headline font-bold text-sm text-on-surface">Cluster Distribution</h3>
+            </div>
+            <div class="relative h-48 w-full flex-1 flex items-center justify-center">
+                <canvas id="clusterChart"></canvas>
+            </div>
+        </div>
+        <div class="md:col-span-2 glass-card p-6 rounded-xl flex flex-col">
+            <div class="flex items-center gap-2 mb-4 border-b border-outline-variant/20 pb-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">insights</span>
+                <h3 class="font-headline font-bold text-sm text-on-surface">Score vs Skills</h3>
+            </div>
+            <div class="relative h-48 w-full flex-1">
+                <canvas id="scoreSkillChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Candidate Clusters -->
     <div class="space-y-12 relative z-10 mb-6" id="candidatesListWrapper">
         <!-- High Match -->
@@ -515,20 +537,22 @@ function renderCandidates(minScore = 0, topN = null) {
 }
 
 // Chart Storage Instances
-let distChartInstance = null;
-let scoreChartInstance = null;
+let distChartInstance    = null;
+let scoreChartInstance   = null;
+let clusterChartInstance = null;
+let scoreSkillInstance   = null;
 
 function renderCharts(filteredCandidates) {
     if (filteredCandidates.length === 0) return;
 
-    let high = filteredCandidates.filter(c => c.match_score > 75).length;
-    let med = filteredCandidates.filter(c => c.match_score >= 50 && c.match_score <= 75).length;
-    let low = filteredCandidates.filter(c => c.match_score < 50).length;
+    const high = filteredCandidates.filter(c => c.match_score > 75).length;
+    const med  = filteredCandidates.filter(c => c.match_score >= 50 && c.match_score <= 75).length;
+    const low  = filteredCandidates.filter(c => c.match_score < 50).length;
 
-    let names = filteredCandidates.map(c => c.filename.substring(0, 10) + (c.filename.length > 10 ? '...' : ''));
-    let scores = filteredCandidates.map(c => c.match_score);
+    const names  = filteredCandidates.map(c => c.filename.substring(0, 12) + (c.filename.length > 12 ? '…' : ''));
+    const scores = filteredCandidates.map(c => c.match_score);
 
-    // Dist Pie Chart
+    // ── 1. Fit Distribution Doughnut ─────────────────────────────────────────
     const ctxDist = document.getElementById('distributionChart').getContext('2d');
     if (distChartInstance) distChartInstance.destroy();
     distChartInstance = new Chart(ctxDist, {
@@ -547,7 +571,8 @@ function renderCharts(filteredCandidates) {
         }
     });
 
-    // Score Bar Chart
+    // ── 2. Candidate Score Bar Chart ─────────────────────────────────────────
+    const scoreColors = scores.map(s => s > 75 ? '#00803c' : (s >= 50 ? '#005f98' : '#b31b25'));
     const ctxScore = document.getElementById('scoreChart').getContext('2d');
     if (scoreChartInstance) scoreChartInstance.destroy();
     scoreChartInstance = new Chart(ctxScore, {
@@ -556,16 +581,82 @@ function renderCharts(filteredCandidates) {
             labels: names,
             datasets: [{
                 label: 'Match Score', data: scores,
-                backgroundColor: '#2aa7ff', borderRadius: 4, barThickness: 24
+                backgroundColor: scoreColors,
+                borderRadius: 6, barThickness: 22
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => v + '%', font: { size: 10 } } },
                 x: { grid: { display: false }, ticks: { font: { size: 10 } } }
             },
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return 'Score: ' + c.raw + '%'} } } }
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => 'Score: ' + ctx.raw + '%' } }
+            }
+        }
+    });
+
+    // ── 3. Cluster Distribution Doughnut ─────────────────────────────────────
+    const clusterCounts = {};
+    filteredCandidates.forEach(c => {
+        const label = c.cluster || 'General Profile';
+        clusterCounts[label] = (clusterCounts[label] || 0) + 1;
+    });
+    const clusterLabels = Object.keys(clusterCounts);
+    const clusterData   = Object.values(clusterCounts);
+    const clusterColors = ['#005f98', '#9128ad', '#874e00', '#00803c', '#b31b25', '#2aa7ff'];
+
+    const ctxCluster = document.getElementById('clusterChart').getContext('2d');
+    if (clusterChartInstance) clusterChartInstance.destroy();
+    clusterChartInstance = new Chart(ctxCluster, {
+        type: 'doughnut',
+        data: {
+            labels: clusterLabels,
+            datasets: [{
+                data: clusterData,
+                backgroundColor: clusterColors.slice(0, clusterLabels.length),
+                borderWidth: 0, hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '60%',
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
+            }
+        }
+    });
+
+    // ── 4. Score vs Skill Score Scatter/Bar ──────────────────────────────────
+    const ctxSS = document.getElementById('scoreSkillChart').getContext('2d');
+    if (scoreSkillInstance) scoreSkillInstance.destroy();
+    scoreSkillInstance = new Chart(ctxSS, {
+        type: 'bar',
+        data: {
+            labels: names,
+            datasets: [
+                {
+                    label: 'Match Score', data: scores,
+                    backgroundColor: 'rgba(0,95,152,0.75)', borderRadius: 4, barThickness: 14, order: 1
+                },
+                {
+                    label: 'Skill Score',
+                    data: filteredCandidates.map(c => c.skill_score || 0),
+                    backgroundColor: 'rgba(145,40,173,0.65)', borderRadius: 4, barThickness: 14, order: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } },
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + '%' } }
+            }
         }
     });
 }
