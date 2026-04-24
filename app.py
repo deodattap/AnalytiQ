@@ -8,15 +8,17 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics.pairwise import cosine_similarity
 try:
     from mlxtend.frequent_patterns import apriori, association_rules
+    import inspect as _inspect
+    _AR_NEEDS_NUM_ITEMSETS = 'num_itemsets' in _inspect.signature(association_rules).parameters
 except ImportError:
     apriori = None
     association_rules = None
+    _AR_NEEDS_NUM_ITEMSETS = False
 
 app = Flask(__name__, static_folder='.', static_url_path='')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 CORS(app)
 
-# ── Predefined skill list (50 skills) ────────────────────────────────────────
 SKILLS = [
     'python','java','javascript','typescript','c++','c#','golang','rust','php','ruby','swift','kotlin','scala','r',
     'react','vue','angular','svelte','html','css','sass','tailwind','bootstrap','next.js','nuxt',
@@ -109,6 +111,7 @@ def extract_text(file):
             with pdfplumber.open(file) as pdf:
                 return '\n'.join(p.extract_text() or '' for p in pdf.pages)
         except Exception as e:
+            app.logger.warning(f"PDF extraction failed for {file.filename}: {e}")
             return ''
     elif filename.endswith('.docx') or filename.endswith('.doc'):
         try:
@@ -116,6 +119,7 @@ def extract_text(file):
             doc = Document(file)
             return '\n'.join(p.text for p in doc.paragraphs)
         except Exception as e:
+            app.logger.warning(f"DOCX extraction failed for {file.filename}: {e}")
             return ''
     return ''
 
@@ -126,28 +130,19 @@ def detect_skills(text):
         pattern = r'\b' + re.escape(skill) + r'\b'
         if re.search(pattern, lower):
             found.append(skill)
-    return list(dict.fromkeys(found))  # deduplicate preserving order
+    return list(dict.fromkeys(found))
 
 def detect_sections(text):
-    """Detect which resume sections are present using keyword matching + heuristics."""
     lower = text.lower()
     found = {}
-
     for section, keywords in SECTION_KEYWORDS.items():
         found[section] = any(kw in lower for kw in keywords)
-
-    # ── Summary heuristic ────────────────────────────────────────────────────
-    # Many resumes open with a profile paragraph WITHOUT a section heading.
-    # If the first 150 words contain a sentence of 20+ consecutive words,
-    # treat it as a summary to avoid false 'missing summary' suggestions.
     if not found['summary']:
         top_words = text.split()[:150]
         top_text  = ' '.join(top_words)
-        # Split on punctuation that ends sentences
         sentences = re.split(r'[.!?\n]', top_text)
         if any(len(s.split()) >= 20 for s in sentences):
             found['summary'] = True
-
     return found
 
 def validate_resume(text):
@@ -176,7 +171,6 @@ def index():
 
 @app.route('/<path:filename>')
 def static_files(filename):
-    # Never intercept API paths — return 404 so the API routes handle them properly
     if filename.startswith('api/'):
         return jsonify({'error': 'Not found'}), 404
     return send_from_directory('.', filename)
@@ -199,21 +193,17 @@ def analyze():
     if not validate_resume(text):
         return jsonify({'error': 'Please upload a valid resume. The document should contain sections like Skills, Education, Experience, and Projects.'}), 422
 
-    # Detect sections
     sections = detect_sections(text)
     missing_sections = [s for s, present in sections.items() if not present]
 
-    # Detect skills
     detected_skills = detect_skills(text)
     all_important = ['python','javascript','typescript','react','node.js','sql','docker','git','aws','machine learning','rest api','system design','ci/cd','kubernetes','mongodb','postgresql','java','figma','graphql']
     missing_skills = [s for s in all_important if s not in detected_skills]
 
-    # Weighted score
     skill_score = min(100, len(detected_skills) * 5)
     proj_score  = 85 if sections.get('projects') else 20
     exp_score   = 85 if sections.get('experience') else 15
     edu_score   = 90 if sections.get('education') else 30
-    # Formatting heuristic: length and variety
     word_count  = len(text.split())
     fmt_score   = min(100, max(20, (word_count // 10)))
 
@@ -249,161 +239,259 @@ def analyze():
 
 @app.route('/api/match', methods=['POST'])
 def match():
-    if request.method != 'POST':
-        return jsonify({'error': 'Method not allowed. Use POST.'}), 405
-    
-    files = request.files.getlist('files')
-    if not files:
-        return jsonify({'error': 'No files uploaded'}), 400
-        
-    if 'job_description' not in request.form:
-        return jsonify({'error': 'No job description provided'}), 400
+    print("[DEBUG] start request")
+    # ── Outer try/except — always returns JSON, never hangs ──────────────────
+    try:
+        if request.method != 'POST':
+            return jsonify({'error': 'Method not allowed. Use POST.'}), 405
 
-    job_desc = request.form['job_description']
-    if not job_desc.strip():
-        return jsonify({'error': 'Empty job description'}), 400
+        files = request.files.getlist('files')
+        if not files:
+            return jsonify({'error': 'No files uploaded'}), 400
 
-    results = []
-    jd_skills = set(detect_skills(job_desc))
-    if not jd_skills:
-        jd_skills = set(detect_skills(job_desc.lower()))
+        if 'job_description' not in request.form:
+            return jsonify({'error': 'No job description provided'}), 400
 
-    candidate_skill_vectors = []
-    candidate_features = [] # for decision tree: [score, num_matched]
+        job_desc = request.form['job_description']
+        if not job_desc.strip():
+            return jsonify({'error': 'Empty job description'}), 400
 
-    for file in files:
-        if file.filename == '':
-            continue
-            
-        text = extract_text(file)
-        if not text.strip():
-            results.append({
-                'filename': file.filename,
-                'error': 'Could not extract text'
-            })
-            continue
+        print(f"[DEBUG] Received {len(files)} file(s)")
+        app.logger.info(f"[MATCH] Received {len(files)} file(s)")
 
-        sections = detect_sections(text)
-        detected_skills = detect_skills(text)
-        
-        # Match against JD
-        resume_skills = set(detected_skills)
-        matched_skills = sorted(resume_skills & jd_skills)
-        missing_skills = sorted(jd_skills - resume_skills)
+        jd_skills = set(detect_skills(job_desc))
+        if not jd_skills:
+            jd_skills = set(detect_skills(job_desc.lower()))
+
+        print(f"[DEBUG] JD skills detected: {jd_skills}")
+        app.logger.info(f"[MATCH] JD skills: {jd_skills}")
         total_jd = len(jd_skills)
 
-        if total_jd > 0:
-            match_score = (len(matched_skills) / total_jd) * 100
-        else:
-            match_score = 50
-        
-        match_score = round(max(15, min(95, match_score)))
+        # ── PHASE 1: BASE RESULTS (always runs first, independent of ML) ─────
+        results = []
+        valid_result_indices = []   # indices into results[] for ML enhancements
+        candidate_skill_vectors = []
+        candidate_features = []
 
-        # Skill vector for clustering (based on global SKILLS list)
-        vector = [1 if skill in resume_skills else 0 for skill in SKILLS]
-        candidate_skill_vectors.append(vector)
-        candidate_features.append([match_score, len(matched_skills)])
+        for file in files:
+            if file.filename == '':
+                continue
 
-        # Extra metrics for the UI
-        skill_score = min(100, len(detected_skills) * 5)
-        proj_score  = 85 if sections.get('projects') else 20
-        exp_score   = 85 if sections.get('experience') else 15
-        has_edu     = sections.get('education', False)
-        
-        # Heuristic for years of experience (very basic: count occurrences of "year" or "yr")
-        exp_matches = re.findall(r'(\d+)\s*(?:year|yr)', text.lower())
-        candidate_exp = max([int(m) for m in exp_matches] + [0]) if exp_matches else 1
+            text = extract_text(file)
+            print(f"[DEBUG] extraction done for: {file.filename} — chars={len(text)}")
 
-        recommendations = build_recommendations(missing_skills)
+            if not text.strip():
+                # Extraction failed — still produce a safe fallback result
+                app.logger.warning(f"[MATCH] Extraction failed: {file.filename}")
+                results.append({
+                    'filename':           file.filename,
+                    'match_score':        15,
+                    'skill_score':        0,
+                    'project_score':      20,
+                    'exp_score':          15,
+                    'candidate_exp':      0,
+                    'has_edu':            False,
+                    'matched_skills':     [],
+                    'missing_skills':     sorted(jd_skills),
+                    'recommendations':    build_recommendations(sorted(jd_skills)),
+                    'total_jd_skills':    total_jd,
+                    'skills_list':        [],
+                    'cluster':            'General Profile',
+                    'classification':     'Average',
+                    'similar_candidates': [],
+                    'extraction_failed':  True,
+                })
+                continue  # no ML vectors for failed files
 
-        results.append({
-            'filename':        file.filename,
-            'match_score':     match_score,
-            'skill_score':     skill_score,
-            'project_score':   proj_score,
-            'exp_score':       exp_score,
-            'candidate_exp':   candidate_exp,
-            'has_edu':         has_edu,
-            'matched_skills':  matched_skills,
-            'missing_skills':  missing_skills,
-            'recommendations': recommendations,
-            'total_jd_skills': total_jd,
-            'skills_list':     list(resume_skills) # for apriori
+            # ── Scoring ──────────────────────────────────────────────────────
+            try:
+                sections       = detect_sections(text)
+                detected_skills = detect_skills(text)
+                resume_skills  = set(detected_skills)
+                matched_skills = sorted(resume_skills & jd_skills)
+                missing_skills = sorted(jd_skills - resume_skills)
+
+                match_score = round(max(15, min(95,
+                    (len(matched_skills) / total_jd * 100) if total_jd > 0 else 50
+                )))
+
+                skill_score   = min(100, len(detected_skills) * 5)
+                proj_score    = 85 if sections.get('projects') else 20
+                exp_score     = 85 if sections.get('experience') else 15
+                has_edu       = sections.get('education', False)
+
+                exp_matches   = re.findall(r'(\d+)\s*(?:year|yr)', text.lower())
+                candidate_exp = max([int(m) for m in exp_matches] + [0]) if exp_matches else 1
+
+                # Rule-based classification (fast, replaces sklearn Decision Tree)
+                if match_score > 75:
+                    classification = 'Excellent'
+                elif match_score > 50:
+                    classification = 'Good'
+                else:
+                    classification = 'Average'
+
+                print(f"[DEBUG] scored {file.filename}: match={match_score}, class={classification}")
+
+                vector = [1 if skill in resume_skills else 0 for skill in SKILLS]
+                valid_result_indices.append(len(results))
+                candidate_skill_vectors.append(vector)
+                candidate_features.append([match_score, len(matched_skills)])
+
+                results.append({
+                    'filename':           file.filename,
+                    'match_score':        match_score,
+                    'skill_score':        skill_score,
+                    'project_score':      proj_score,
+                    'exp_score':          exp_score,
+                    'candidate_exp':      candidate_exp,
+                    'has_edu':            has_edu,
+                    'matched_skills':     matched_skills,
+                    'missing_skills':     missing_skills,
+                    'recommendations':    build_recommendations(missing_skills),
+                    'total_jd_skills':    total_jd,
+                    'skills_list':        list(resume_skills),
+                    'cluster':            'General Profile',  # ML may override
+                    'classification':     classification,     # ML may override
+                    'similar_candidates': [],
+                })
+
+            except Exception as score_err:
+                app.logger.warning(f"[MATCH] Scoring failed for {file.filename}: {score_err}")
+                results.append({
+                    'filename':           file.filename,
+                    'match_score':        15,
+                    'skill_score':        0,
+                    'project_score':      20,
+                    'exp_score':          15,
+                    'candidate_exp':      0,
+                    'has_edu':            False,
+                    'matched_skills':     [],
+                    'missing_skills':     sorted(jd_skills),
+                    'recommendations':    build_recommendations(sorted(jd_skills)),
+                    'total_jd_skills':    total_jd,
+                    'skills_list':        [],
+                    'cluster':            'General Profile',
+                    'classification':     'Average',
+                    'similar_candidates': [],
+                })
+
+        print(f"[DEBUG] base results built: {len(results)} candidate(s), {len(valid_result_indices)} valid for ML")
+        app.logger.info(f"[MATCH] Valid candidates: {len(valid_result_indices)} / Total: {len(results)}")
+
+        # ── PHASE 2: ML ENHANCEMENTS (purely optional — never block core) ────
+        final_rules = []
+        n_valid = len(valid_result_indices)
+
+        # ── DSBD 1: KMeans clustering ─────────────────────────────────────────
+        print("[DEBUG] before KMeans")
+        if n_valid >= 2:
+            try:
+                vec_array = np.array(candidate_skill_vectors, dtype=float)
+                if np.all(vec_array.sum(axis=1) == 0):
+                    raise ValueError("All vectors are zero")
+                n_clusters = min(4, n_valid)
+                labels = KMeans(n_clusters=n_clusters, random_state=42, n_init='auto').fit_predict(vec_array)
+                cmap = {0: "Frontend Focused", 1: "Backend Focused", 2: "Balanced Profile", 3: "Entry Level"}
+                for vi, ri in enumerate(valid_result_indices):
+                    results[ri]['cluster'] = cmap.get(int(labels[vi]), "General Profile")
+                app.logger.info("[KMEANS] Done ✓")
+            except Exception as e:
+                app.logger.warning(f"[KMEANS] Fallback: {e}")
+
+        # ── DSBD 2: Classification already applied via rules in Phase 1 ───────
+
+        # ── DSBD 3: Apriori association rules ─────────────────────────────────
+        print("[DEBUG] before Apriori")
+        if apriori and n_valid >= 2:
+            try:
+                from collections import Counter
+                all_skills   = [results[ri]['skills_list'] for ri in valid_result_indices]
+                skill_counts = Counter(s for lst in all_skills for s in lst)
+                unique_sk    = sorted(s for s, _ in skill_counts.most_common(25))
+                if len(unique_sk) >= 2:
+                    skill_df = pd.DataFrame(
+                        [{s: (s in c) for s in unique_sk} for c in all_skills],
+                        dtype=bool
+                    )
+                    freq = apriori(skill_df, min_support=0.3, use_colnames=True)
+                    if not freq.empty:
+                        ar_kwargs = dict(metric="confidence", min_threshold=0.7)
+                        if _AR_NEEDS_NUM_ITEMSETS:
+                            ar_kwargs['num_itemsets'] = len(skill_df)
+                        rules = association_rules(freq, **ar_kwargs)
+                        for _, row in rules.iterrows():
+                            ant  = list(row['antecedents'])[0]
+                            con  = list(row['consequents'])[0]
+                            conf = round(row['confidence'] * 100)
+                            final_rules.append(f"{ant} → {con} ({conf}%)")
+                app.logger.info(f"[APRIORI] Done ✓ — {len(final_rules)} rule(s)")
+            except Exception as e:
+                app.logger.warning(f"[APRIORI] Skipped: {e}")
+
+        # ── DSBD 4: Cosine similarity ─────────────────────────────────────────
+        print("[DEBUG] before Cosine Similarity")
+        if n_valid >= 2:
+            try:
+                vec_array  = np.array(candidate_skill_vectors, dtype=float)
+                sim_matrix = cosine_similarity(vec_array)
+                for vi, ri in enumerate(valid_result_indices):
+                    sorted_idx = sim_matrix[vi].argsort()[::-1]
+                    similar = []
+                    for si in sorted_idx:
+                        if si == vi:
+                            continue
+                        if sim_matrix[vi][si] > 0.5:
+                            similar.append(results[valid_result_indices[si]]['filename'])
+                        if len(similar) >= 2:
+                            break
+                    results[ri]['similar_candidates'] = similar
+                app.logger.info("[COSINE SIM] Done ✓")
+            except Exception as e:
+                app.logger.warning(f"[COSINE SIM] Skipped: {e}")
+
+        # ── PHASE 3: HARD FINAL FALLBACK — results must NEVER be empty ───────
+        if not results:
+            print("[DEBUG] FINAL FALLBACK triggered — results was empty!")
+            for file in files:
+                if file.filename:
+                    results.append({
+                        'filename':           file.filename,
+                        'match_score':        15,
+                        'skill_score':        0,
+                        'project_score':      20,
+                        'exp_score':          15,
+                        'candidate_exp':      0,
+                        'has_edu':            False,
+                        'matched_skills':     [],
+                        'missing_skills':     sorted(jd_skills),
+                        'recommendations':    build_recommendations(sorted(jd_skills)),
+                        'total_jd_skills':    total_jd,
+                        'skills_list':        [],
+                        'cluster':            'General Profile',
+                        'classification':     'Average',
+                        'similar_candidates': [],
+                    })
+
+        print(f"[DEBUG] before return — {len(results)} result(s)")
+        app.logger.info(f"[MATCH] Sending response — {len(results)} result(s)")
+        return jsonify({
+            'results':           results,
+            'job_description':   job_desc,
+            'association_rules': final_rules[:5],
         })
 
-    # --- DSBD ENHANCEMENTS ---
-    if results:
-        # 1. Clustering (KMeans)
-        if len(results) >= 3:
-            n_clusters = min(4, len(results))
-            kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init='auto')
-            cluster_labels = kmeans.fit_predict(candidate_skill_vectors)
-            
-            # Simple mapping logic for clusters
-            cluster_map = {0: "Frontend Focused", 1: "Backend Focused", 2: "Balanced Profile", 3: "Entry Level"}
-            for i, res in enumerate(results):
-                res['cluster'] = cluster_map.get(cluster_labels[i], "Other")
-        else:
-            for res in results: res['cluster'] = "General Profile"
-
-        # 2. Classification (Decision Tree)
-        # We need some dummy data to "train" if we don't have enough, or just use it if we have enough.
-        # For simplicity, we'll train a small tree on the current batch.
-        if len(results) >= 3:
-            # Synthetic labels for training a classifier on the fly (Simple heuristic)
-            train_labels = []
-            for feat in candidate_features:
-                if feat[0] > 80: train_labels.append("Strong Match")
-                elif feat[0] > 50: train_labels.append("Moderate Match")
-                else: train_labels.append("Low Match")
-            
-            dt = DecisionTreeClassifier(max_depth=3)
-            dt.fit(candidate_features, train_labels)
-            pred_labels = dt.predict(candidate_features)
-            for i, res in enumerate(results):
-                res['classification'] = pred_labels[i]
-        else:
-            for res in results:
-                res['classification'] = "Strong Match" if res['match_score'] > 75 else ("Moderate Match" if res['match_score'] > 40 else "Low Match")
-
-        # 3. Association Rules (Apriori)
-        final_rules = []
-        if apriori and len(results) >= 2:
-            try:
-                # Convert skill lists to a boolean DataFrame
-                all_candidate_skills = [res['skills_list'] for res in results]
-                unique_skills = sorted(list(set([s for sublist in all_candidate_skills for s in sublist])))
-                
-                skill_df = pd.DataFrame([{s: (s in c_skills) for s in unique_skills} for c_skills in all_candidate_skills])
-                
-                frequent_itemsets = apriori(skill_df, min_support=0.3, use_colnames=True)
-                if not frequent_itemsets.empty:
-                    rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.7)
-                    for _, row in rules.iterrows():
-                        ant = list(row['antecedents'])[0]
-                        con = list(row['consequents'])[0]
-                        conf = round(row['confidence'] * 100)
-                        final_rules.append(f"{ant} → {con} ({conf}%)")
-            except Exception:
-                pass
-
-        # 4. Recommendation (Cosine Similarity)
-        if len(results) >= 2:
-            sim_matrix = cosine_similarity(candidate_skill_vectors)
-            for i, res in enumerate(results):
-                similar_indices = sim_matrix[i].argsort()[::-1][1:3] # Top 2 similar excluding self
-                res['similar_candidates'] = [results[idx]['filename'] for idx in similar_indices if sim_matrix[i][idx] > 0.5]
-        else:
-            for res in results: res['similar_candidates'] = []
-
-    return jsonify({
-        'results': results,
-        'job_description': job_desc,
-        'association_rules': final_rules[:5] # Return top 5 rules
-    })
+    except Exception as e:
+        print("ERROR:", str(e))
+        app.logger.exception(f"[MATCH] Unhandled exception: {e}")
+        return jsonify({
+            'results':           [],
+            'association_rules': [],
+            'error':             str(e)
+        }), 200
 
 
-# ── Global error handlers (always return JSON, never HTML) ────────────────────
+# ── Global error handlers ─────────────────────────────────────────────────────
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({'error': 'Endpoint not found'}), 404
