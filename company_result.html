@@ -127,6 +127,100 @@
     .nav-btn-primary { background:linear-gradient(135deg,#005f98,#2aa7ff); color:#ecf3ff; border:none; box-shadow:0 4px 16px -4px rgba(0,95,152,0.4); }
     .nav-btn-primary:hover { transform:translateY(-2px) scale(1.04); box-shadow:0 8px 24px -4px rgba(0,95,152,0.5); }
     .nav-sparkle { position:absolute; pointer-events:none; animation:sparkle 2.5s ease-in-out infinite; }
+
+    /* ── Comparison checkbox ── */
+    .cmp-checkbox-wrap {
+        display: flex; align-items: center; gap: 6px;
+        font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700;
+        color: #595c5e; cursor: pointer; user-select: none;
+    }
+    .cmp-checkbox-wrap input[type=checkbox] {
+        width: 15px; height: 15px; accent-color: #005f98; cursor: pointer;
+    }
+    .cmp-checkbox-wrap.selected { color: #005f98; }
+
+    /* ── Sticky comparison bar ── */
+    #compareBar {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(20px);
+        border-top: 1.5px solid rgba(0,95,152,0.15);
+        box-shadow: 0 -8px 32px -8px rgba(0,95,152,0.15);
+        padding: 12px 24px;
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #compareBar.visible { transform: translateY(0); }
+    #compareBar .cmp-slots { display: flex; gap: 12px; flex-wrap: wrap; }
+    #compareBar .cmp-slot {
+        background: rgba(0,95,152,0.07); border: 1.5px solid rgba(0,95,152,0.2);
+        border-radius: 9999px; padding: 5px 14px;
+        font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700; color: #005f98;
+        display: flex; align-items: center; gap: 6px;
+    }
+    #compareBar .cmp-slot.empty {
+        opacity: 0.4; border-style: dashed; color: #595c5e; background: transparent;
+    }
+    #compareBar .cmp-slot button {
+        background: none; border: none; padding: 0; cursor: pointer;
+        color: #b31b25; font-size: 14px; line-height: 1; font-weight: 900;
+    }
+
+    /* ── Comparison Modal ── */
+    #compareModal {
+        position: fixed; inset: 0; z-index: 300;
+        background: rgba(11,15,16,0.55);
+        backdrop-filter: blur(6px);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    #compareModal.open { opacity: 1; pointer-events: all; }
+    #compareModal .modal-box {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 32px 80px -16px rgba(0,95,152,0.25);
+        width: min(92vw, 860px);
+        max-height: 88vh;
+        overflow-y: auto;
+        padding: 32px;
+        position: relative;
+    }
+    #compareModal .modal-close {
+        position: absolute; top: 18px; right: 20px;
+        background: rgba(0,95,152,0.08); border: none; border-radius: 9999px;
+        width: 34px; height: 34px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: #005f98; font-size: 20px; font-weight: 900;
+        transition: background 0.2s;
+    }
+    #compareModal .modal-close:hover { background: rgba(0,95,152,0.16); }
+    .cmp-col {
+        flex: 1; border-radius: 14px;
+        border: 1.5px solid rgba(0,95,152,0.12);
+        padding: 20px;
+    }
+    .cmp-row {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 14px; margin-top: 20px;
+    }
+    .cmp-col-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13px; font-weight: 800; color: #005f98;
+        margin-bottom: 14px; border-bottom: 1.5px solid rgba(0,95,152,0.12);
+        padding-bottom: 10px;
+    }
+    .cmp-metric {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
+        font-family: 'Manrope', sans-serif; font-size: 12px;
+    }
+    .cmp-metric-label { color: #595c5e; font-weight: 600; }
+    .cmp-metric-value { font-weight: 800; color: #2c2f31; }
+    .cmp-win { color: #00803c !important; }
+    .cmp-skills-wrap { margin-top: 12px; }
+    .cmp-skills-title { font-family:'Manrope',sans-serif; font-size:10px; font-weight:700; color:#595c5e; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
 </style>
 </head>
 <body class="bg-background font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
@@ -191,20 +285,30 @@
                 <span class="material-symbols-outlined text-primary text-[20px]">tune</span>
                 <h3 class="font-headline font-bold text-lg text-on-surface">Controls</h3>
             </div>
+            <!-- Row 1: Score + Top-N filters -->
             <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
                     <label for="minScoreFilter" class="text-xs font-bold text-on-surface-variant">Min Score</label>
-                    <input type="number" id="minScoreFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" value="0" min="0" max="100"/>
+                    <input type="number" id="minScoreFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" value="0" min="0" max="100" oninput="applyFilters()"/>
                 </div>
                 <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
                     <label for="topNFilter" class="text-xs font-bold text-on-surface-variant">Top N</label>
-                    <input type="number" id="topNFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" placeholder="All" min="1"/>
+                    <input type="number" id="topNFilter" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold w-10 text-on-surface text-center" placeholder="All" min="1" oninput="applyFilters()"/>
                 </div>
-                <button onclick="applyFilters()" class="text-xs font-bold bg-primary text-on-primary px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">Apply</button>
                 <div class="h-6 w-px bg-outline-variant/30 hidden sm:block mx-1"></div>
                 <button onclick="exportCSV()" class="text-xs font-bold bg-surface-container-high text-on-surface flex items-center gap-1.5 px-4 py-2 rounded-lg hover:-translate-y-0.5 hover:bg-surface-container-highest transition-all outline-none">
                     <span class="material-symbols-outlined text-[16px]">download</span> Export CSV
                 </button>
+                <button onclick="exportPDF()" class="text-xs font-bold bg-surface-container-high text-on-surface flex items-center gap-1.5 px-4 py-2 rounded-lg hover:-translate-y-0.5 hover:bg-surface-container-highest transition-all outline-none">
+                    <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> Download Report
+                </button>
+            </div>
+            <!-- Row 2: Must-Have Skill Filter -->
+            <div class="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors w-full">
+                <span class="material-symbols-outlined text-primary text-[16px]">psychology</span>
+                <label for="mustSkillFilter" class="text-xs font-bold text-on-surface-variant whitespace-nowrap">Must Skills</label>
+                <input type="text" id="mustSkillFilter" placeholder="e.g. python, sql, react" class="bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-on-surface flex-1 min-w-0" oninput="applyFilters()"/>
+                <button onclick="document.getElementById('mustSkillFilter').value=''; applyFilters();" title="Clear skill filter" class="text-on-surface-variant hover:text-error transition-colors text-[14px] font-bold leading-none">×</button>
             </div>
         </div>
 
@@ -314,9 +418,42 @@
         </div>
     </div>
 
-
-
 </main>
+
+<!-- ── Sticky Comparison Bar ── -->
+<div id="compareBar">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span class="material-symbols-outlined" style="color:#005f98;font-size:20px;font-variation-settings:'FILL' 1;">compare_arrows</span>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;color:#2c2f31;">Compare Candidates</span>
+    </div>
+    <div class="cmp-slots">
+        <div class="cmp-slot empty" id="cmpSlot0"><span class="material-symbols-outlined" style="font-size:14px;">person_add</span> Candidate 1</div>
+        <div class="cmp-slot empty" id="cmpSlot1"><span class="material-symbols-outlined" style="font-size:14px;">person_add</span> Candidate 2</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <button id="compareBtn" onclick="openCompareModal()" disabled
+            style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:800;padding:8px 20px;border-radius:9999px;border:none;cursor:pointer;background:linear-gradient(135deg,#005f98,#2aa7ff);color:#ecf3ff;box-shadow:0 4px 16px -4px rgba(0,95,152,0.4);transition:all 0.2s;opacity:0.5;">
+            Compare
+        </button>
+        <button onclick="clearComparison()" title="Clear selection"
+            style="font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;padding:8px 14px;border-radius:9999px;border:1.5px solid rgba(171,173,175,0.35);background:transparent;color:#595c5e;cursor:pointer;transition:all 0.2s;">
+            Clear
+        </button>
+    </div>
+</div>
+
+<!-- ── Comparison Modal ── -->
+<div id="compareModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeCompareModal()" title="Close">×</button>
+        <h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#005f98;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">compare_arrows</span>
+            Candidate Comparison
+        </h2>
+        <p style="font-family:'Manrope',sans-serif;font-size:12px;color:#595c5e;margin-bottom:0;">Side-by-side analysis of selected candidates.</p>
+        <div class="cmp-row" id="cmpModalContent"></div>
+    </div>
+</div>
 
 <!-- Footer -->
 <footer class="border-t border-outline-variant/20 py-6 px-6 mt-6">
@@ -346,10 +483,143 @@ matchResults.forEach(c => {
 });
 let sortedMissing = Object.entries(missingCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-function generateCandidateCardsHTML(candidates) {
+// ── Comparison state ─────────────────────────────────────────────────────────
+let selectedForCompare = []; // array of candidate objects (max 2)
+
+function toggleCompare(idx, candidateIndex) {
+    const c = matchResults[candidateIndex];
+    const alreadyIdx = selectedForCompare.findIndex(x => x._compareIdx === candidateIndex);
+    if (alreadyIdx >= 0) {
+        // Deselect
+        selectedForCompare.splice(alreadyIdx, 1);
+    } else {
+        if (selectedForCompare.length >= 2) return; // max 2
+        c._compareIdx = candidateIndex;
+        selectedForCompare.push(c);
+    }
+    updateCompareBar();
+    // Update checkbox visual
+    document.querySelectorAll(`[data-compare-idx="${candidateIndex}"]`).forEach(cb => {
+        cb.checked = selectedForCompare.some(x => x._compareIdx === candidateIndex);
+    });
+}
+
+function updateCompareBar() {
+    const bar = document.getElementById('compareBar');
+    const btn = document.getElementById('compareBtn');
+    const slot0 = document.getElementById('cmpSlot0');
+    const slot1 = document.getElementById('cmpSlot1');
+
+    const fill = (slot, c, arrIdx) => {
+        if (c) {
+            slot.className = 'cmp-slot';
+            slot.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;">person</span> ${c.filename.substring(0,18)}${c.filename.length > 18 ? '…' : ''} <button onclick="removeCmpSlot(${arrIdx})" title="Remove">×</button>`;
+        } else {
+            slot.className = 'cmp-slot empty';
+            slot.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">person_add</span> Candidate ${arrIdx + 1}`;
+        }
+    };
+
+    fill(slot0, selectedForCompare[0], 0);
+    fill(slot1, selectedForCompare[1], 1);
+
+    if (selectedForCompare.length > 0) {
+        bar.classList.add('visible');
+    } else {
+        bar.classList.remove('visible');
+    }
+    btn.disabled = selectedForCompare.length < 2;
+    btn.style.opacity = selectedForCompare.length < 2 ? '0.5' : '1';
+    btn.style.cursor = selectedForCompare.length < 2 ? 'not-allowed' : 'pointer';
+}
+
+function removeCmpSlot(arrIdx) {
+    const c = selectedForCompare[arrIdx];
+    if (!c) return;
+    document.querySelectorAll(`[data-compare-idx="${c._compareIdx}"]`).forEach(cb => cb.checked = false);
+    selectedForCompare.splice(arrIdx, 1);
+    updateCompareBar();
+}
+
+function clearComparison() {
+    selectedForCompare.forEach(c => {
+        document.querySelectorAll(`[data-compare-idx="${c._compareIdx}"]`).forEach(cb => cb.checked = false);
+    });
+    selectedForCompare = [];
+    updateCompareBar();
+}
+
+function openCompareModal() {
+    if (selectedForCompare.length < 2) return;
+    const [a, b] = selectedForCompare;
+    document.getElementById('cmpModalContent').innerHTML = `
+        <div class="cmp-col">
+            <div class="cmp-col-label">${a.filename}</div>
+            ${buildCmpMetrics(a, b)}
+            ${buildCmpSkills(a)}
+        </div>
+        <div class="cmp-col">
+            <div class="cmp-col-label">${b.filename}</div>
+            ${buildCmpMetrics(b, a)}
+            ${buildCmpSkills(b)}
+        </div>
+    `;
+    document.getElementById('compareModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCompareModal() {
+    document.getElementById('compareModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function buildCmpMetrics(c, other) {
+    const rows = [
+        { label: 'Match Score', valC: c.match_score, valO: other.match_score, suffix: '%' },
+        { label: 'Skill Score',  valC: c.skill_score,  valO: other.skill_score,  suffix: '%' },
+        { label: 'Exp Score',   valC: c.exp_score,   valO: other.exp_score,   suffix: '%' },
+        { label: 'Project Score', valC: c.project_score, valO: other.project_score, suffix: '%' },
+        { label: 'Classification', valC: c.classification || '—', valO: other.classification || '—', raw: true },
+        { label: 'Cluster', valC: c.cluster || '—', valO: other.cluster || '—', raw: true },
+    ];
+    return rows.map(r => {
+        let winClass = '';
+        if (!r.raw) winClass = r.valC > r.valO ? 'cmp-win' : (r.valC < r.valO ? 'style="color:#b31b25;"' : '');
+        const display = r.raw ? r.valC : r.valC + r.suffix;
+        return `<div class="cmp-metric">
+            <span class="cmp-metric-label">${r.label}</span>
+            <span class="cmp-metric-value ${!r.raw && r.valC > r.valO ? 'cmp-win' : (r.valC < r.valO && !r.raw ? 'style=\"color:#b31b25\"' : '')}">${display}</span>
+        </div>`;
+    }).join('');
+}
+
+function buildCmpSkills(c) {
+    const mHTML = c.matched_skills.length
+        ? c.matched_skills.map(s => `<span class="tag-matched" style="font-size:10px;padding:3px 9px;">${capitalize(s)}</span>`).join('')
+        : '<span style="font-size:11px;color:#595c5e;">None</span>';
+    const misHTML = c.missing_skills.length
+        ? c.missing_skills.map(s => `<span class="tag-missing" style="font-size:10px;padding:3px 9px;">${capitalize(s)}</span>`).join('')
+        : '<span style="font-size:11px;color:#595c5e;">None</span>';
+    return `
+        <div class="cmp-skills-wrap">
+            <div class="cmp-skills-title">Matched Skills</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">${mHTML}</div>
+            <div class="cmp-skills-title">Missing Skills</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">${misHTML}</div>
+        </div>`;
+}
+
+// Close modal on backdrop click
+document.getElementById('compareModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCompareModal();
+});
+
+// ── Candidate card generator ──────────────────────────────────────────────────
+function generateCandidateCardsHTML(candidates, globalIndices) {
     if (candidates.length === 0) return '<p class="text-sm text-on-surface-variant px-2">No candidates in this category.</p>';
     
     return candidates.map((c, i) => {
+        const globalIdx = globalIndices ? globalIndices[i] : i;
         const score = c.match_score;
         const matchedHTML = c.matched_skills.map(s => `<span class="tag-matched"><span class="material-symbols-outlined text-[13px]" style="color:#00803c">check_circle</span>${capitalize(s)}</span>`).join('');
         const missingHTML = c.missing_skills.map(s => `<span class="tag-missing"><span class="material-symbols-outlined text-[13px]">add_circle</span>${capitalize(s)}</span>`).join('');
@@ -385,6 +655,9 @@ function generateCandidateCardsHTML(candidates) {
         const clusterBadge = c.cluster ? `<span class="bg-secondary/10 text-secondary px-2 py-0.5 text-[10px] uppercase font-bold rounded flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">group_work</span> ${c.cluster}</span>` : '';
         const similarInfo = (c.similar_candidates && c.similar_candidates.length > 0) ? `<p class="text-[10px] text-on-surface-variant font-medium mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">handshake</span> Similar to: ${c.similar_candidates.join(', ')}</p>` : '';
 
+        const isSelectedForCmp = selectedForCompare.some(x => x._compareIdx === globalIdx);
+        const cmpDisabled = !isSelectedForCmp && selectedForCompare.length >= 2;
+
         return `
         <div class="glass-card rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-8 animate-in delay-${(i % 5) + 1} hover:shadow-[0_24px_48px_-12px_rgba(0,95,152,0.12)] transition-all duration-300">
             <div class="score-ring-wrap shrink-0" style="width: 110px; height: 110px;">
@@ -409,6 +682,10 @@ function generateCandidateCardsHTML(candidates) {
                     ${classificationBadge}
                     ${clusterBadge}
                     ${duplicateBadge}
+                    <label class="cmp-checkbox-wrap${isSelectedForCmp ? ' selected' : ''}" title="${cmpDisabled ? 'Deselect another candidate first' : 'Select for comparison'}" style="margin-left:auto;">
+                        <input type="checkbox" data-compare-idx="${globalIdx}" ${isSelectedForCmp ? 'checked' : ''} ${cmpDisabled ? 'disabled' : ''} onchange="toggleCompare(${i}, ${globalIdx})"/>
+                        Compare
+                    </label>
                 </div>
                 <div class="px-4 py-3 bg-[#f5f7f9] border-l-2 ${explanationBorder} rounded-r-lg flex flex-col gap-2.5">
                     <p class="text-sm font-bold text-on-surface-variant">${explanationText}</p>
@@ -492,23 +769,44 @@ window.addEventListener('DOMContentLoaded', () => {
     renderCandidates();
 });
 
-function renderCandidates(minScore = 0, topN = null) {
-    let filtered = matchResults.filter(c => c.match_score >= minScore);
+function renderCandidates(minScore = 0, topN = null, mustSkills = []) {
+    // Filter by min score
+    let indexedResults = matchResults.map((c, idx) => ({ c, idx }));
+    let filtered = indexedResults.filter(({ c }) => c.match_score >= minScore);
+
+    // Filter by must-have skills
+    if (mustSkills.length > 0) {
+        filtered = filtered.filter(({ c }) => {
+            const allSkills = (c.matched_skills || []).map(s => s.toLowerCase());
+            return mustSkills.every(sk => allSkills.includes(sk));
+        });
+    }
+
+    // Apply Top-N (after skill filter, sorted by score)
     if (topN && topN > 0) {
         filtered = filtered.slice(0, topN);
     }
-    
-    let high = filtered.filter(c => c.match_score > 75);
-    let medium = filtered.filter(c => c.match_score >= 50 && c.match_score <= 75);
-    let low = filtered.filter(c => c.match_score < 50);
 
-    document.getElementById('highContainer').innerHTML = generateCandidateCardsHTML(high);
-    document.getElementById('mediumContainer').innerHTML = generateCandidateCardsHTML(medium);
-    document.getElementById('lowContainer').innerHTML = generateCandidateCardsHTML(low);
-    
-    document.getElementById('highSection').style.display = high.length > 0 ? 'block' : 'none';
-    document.getElementById('mediumSection').style.display = medium.length > 0 ? 'block' : 'none';
-    document.getElementById('lowSection').style.display = low.length > 0 ? 'block' : 'none';
+    const filteredCandidates = filtered.map(({ c }) => c);
+    const filteredIndices    = filtered.map(({ idx }) => idx);
+
+    const getGroup = (list, indices, predFn) => {
+        const out = { cands: [], idxs: [] };
+        list.forEach((c, i) => { if (predFn(c)) { out.cands.push(c); out.idxs.push(indices[i]); } });
+        return out;
+    };
+
+    const highG   = getGroup(filteredCandidates, filteredIndices, c => c.match_score > 75);
+    const mediumG = getGroup(filteredCandidates, filteredIndices, c => c.match_score >= 50 && c.match_score <= 75);
+    const lowG    = getGroup(filteredCandidates, filteredIndices, c => c.match_score < 50);
+
+    document.getElementById('highContainer').innerHTML   = generateCandidateCardsHTML(highG.cands,   highG.idxs);
+    document.getElementById('mediumContainer').innerHTML = generateCandidateCardsHTML(mediumG.cands, mediumG.idxs);
+    document.getElementById('lowContainer').innerHTML    = generateCandidateCardsHTML(lowG.cands,    lowG.idxs);
+
+    document.getElementById('highSection').style.display   = highG.cands.length   > 0 ? 'block' : 'none';
+    document.getElementById('mediumSection').style.display = mediumG.cands.length > 0 ? 'block' : 'none';
+    document.getElementById('lowSection').style.display    = lowG.cands.length    > 0 ? 'block' : 'none';
 
     // Rerender animations
     setTimeout(() => {
@@ -533,7 +831,7 @@ function renderCandidates(minScore = 0, topN = null) {
         });
     }, 50);
 
-    renderCharts(filtered);
+    renderCharts(filteredCandidates);
 }
 
 // Chart Storage Instances
@@ -662,26 +960,148 @@ function renderCharts(filteredCandidates) {
 }
 
 function applyFilters() {
-    const minS = parseInt(document.getElementById('minScoreFilter').value) || 0;
+    const minS   = parseInt(document.getElementById('minScoreFilter').value) || 0;
     const topStr = document.getElementById('topNFilter').value;
-    const topN = topStr ? parseInt(topStr) : null;
-    renderCandidates(minS, topN);
+    const topN   = topStr ? parseInt(topStr) : null;
+    const skillRaw = document.getElementById('mustSkillFilter').value.trim();
+    const mustSkills = skillRaw
+        ? skillRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+        : [];
+    renderCandidates(minS, topN, mustSkills);
 }
 
 function exportCSV() {
-    let csv = "Filename,Match Score,Skill Score,Experience Score,Projects Score,Education Score,Readiness\n";
+    const headers = [
+        'Name', 'Email', 'Phone', 'Filename',
+        'Match Score', 'Classification', 'Cluster',
+        'Skill Score', 'Exp Score', 'Project Score', 'Education',
+        'Matched Skills', 'Missing Skills', 'Readiness'
+    ];
+    const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    let csv = headers.map(escape).join(',') + '\n';
     matchResults.forEach(c => {
-        let readiness = (c.match_score > 70 && c.project_score > 75) ? 'High' : (c.match_score > 50 ? 'Medium' : 'Low');
-        csv += `"${c.filename}",${c.match_score},${c.skill_score},${c.exp_score},${c.project_score},${c.edu_score},"${readiness}"\n`;
+        const readiness = (c.match_score > 70 && c.project_score > 75) ? 'High' : (c.match_score > 50 ? 'Medium' : 'Low');
+        const row = [
+            c.name  || 'Unknown',
+            c.email || '-',
+            c.phone || '-',
+            c.filename,
+            c.match_score,
+            c.classification || '-',
+            c.cluster        || '-',
+            c.skill_score,
+            c.exp_score,
+            c.project_score,
+            c.has_edu ? 'CS/IT' : 'Other',
+            (c.matched_skills || []).join('; '),
+            (c.missing_skills || []).join('; '),
+            readiness
+        ];
+        csv += row.map(escape).join(',') + '\n';
     });
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
     link.href = url;
-    link.setAttribute("download", "shortlist_results.csv");
+    link.setAttribute('download', 'shortlist_results.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function exportPDF() {
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const sorted = [...matchResults].sort((a, b) => b.match_score - a.match_score);
+    const topCandidates = sorted.slice(0, 5);
+
+    const scoreColor = s => s > 75 ? '#00803c' : (s >= 50 ? '#005f98' : '#b31b25');
+    const label      = s => s > 75 ? 'High Match' : (s >= 50 ? 'Medium Match' : 'Low Match');
+
+    const rows = sorted.map((c, i) => `
+        <tr style="background:${i % 2 === 0 ? '#fff' : '#f5f7f9'};">
+            <td style="padding:8px 10px;font-weight:700;color:#2c2f31;">${c.name || 'Unknown'}</td>
+            <td style="padding:8px 10px;color:#595c5e;font-size:11px;">${c.email || '-'}</td>
+            <td style="padding:8px 10px;color:#595c5e;font-size:11px;">${c.phone || '-'}</td>
+            <td style="padding:8px 10px;text-align:center;font-weight:800;color:${scoreColor(c.match_score)};">${c.match_score}%</td>
+            <td style="padding:8px 10px;text-align:center;"><span style="background:${scoreColor(c.match_score)}20;color:${scoreColor(c.match_score)};padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;">${c.classification || label(c.match_score)}</span></td>
+            <td style="padding:8px 10px;color:#595c5e;font-size:11px;">${c.cluster || '-'}</td>
+            <td style="padding:8px 10px;font-size:10px;color:#595c5e;">${(c.matched_skills || []).slice(0, 4).map(s => s.charAt(0).toUpperCase()+s.slice(1)).join(', ')}${(c.matched_skills||[]).length > 4 ? ' +' + ((c.matched_skills||[]).length - 4) + ' more' : ''}</td>
+        </tr>`).join('');
+
+    const summaryCards = topCandidates.map(c => `
+        <div style="border:1.5px solid #e5e9eb;border-radius:12px;padding:14px 18px;background:#fff;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div>
+                    <div style="font-weight:800;font-size:14px;color:#2c2f31;">${c.name || 'Unknown'}</div>
+                    <div style="font-size:11px;color:#595c5e;margin-top:2px;">${c.email || '-'} &nbsp;|&nbsp; ${c.phone || '-'}</div>
+                </div>
+                <div style="font-size:22px;font-weight:900;color:${scoreColor(c.match_score)};">${c.match_score}%</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                ${(c.matched_skills || []).slice(0, 5).map(s =>
+                    `<span style="background:#00803c12;color:#00803c;padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:700;">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`
+                ).join('')}
+            </div>
+        </div>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Candidate Shortlist Report — ${today}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #2c2f31; background: #f5f7f9; padding: 32px; }
+  h1  { font-size: 24px; font-weight: 800; color: #005f98; }
+  h2  { font-size: 15px; font-weight: 700; color: #2c2f31; margin: 24px 0 10px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,95,152,0.07); }
+  thead th { background: #005f98; color: #fff; padding: 10px; font-size: 11px; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;font-size:10px;font-weight:700; }
+  .meta { font-size:12px;color:#595c5e;margin-top:4px; }
+  .header-bar { display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e5e9eb; }
+  @media print { body { padding: 16px; background: #fff; } }
+</style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <h1>&#128203; Candidate Shortlist Report</h1>
+      <div class="meta">Generated on <strong>${today}</strong> &nbsp;|&nbsp; ${matchResults.length} candidate(s) analysed</div>
+    </div>
+    <div style="font-size:11px;color:#595c5e;text-align:right;">AnalytiQ &mdash; AI-Powered Recruitment</div>
+  </div>
+
+  <h2>&#127942; Top Candidates Overview</h2>
+  <div class="summary-grid">${summaryCards}</div>
+
+  <h2 style="margin-top:28px;">&#128203; Full Candidate Report</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th><th>Email</th><th>Phone</th>
+        <th style="text-align:center;">Score</th>
+        <th style="text-align:center;">Classification</th>
+        <th>Cluster</th><th>Key Skills</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <div style="margin-top:28px;padding:14px 18px;background:#fff;border-radius:12px;border:1.5px solid #e5e9eb;font-size:12px;color:#595c5e;">
+    <strong>Disclaimer:</strong> This report is AI-generated based on resume parsing.
+    Verify candidate details independently before making hiring decisions.
+  </div>
+
+  <script>window.onload = function(){ window.print(); };<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) { alert('Please allow pop-ups for this page to download the report.'); return; }
+    win.document.write(html);
+    win.document.close();
 }
 </script>
 

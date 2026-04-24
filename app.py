@@ -103,6 +103,46 @@ SKILL_META = {
 DEFAULT_META = {'emoji':'🛠️','bg':'linear-gradient(135deg,#005f98,#2aa7ff)'}
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+def extract_identity(text):
+    """Extract name / email / phone from raw resume text."""
+    # — Email (first match) —
+    email_match = re.search(r'[\w.+\-]+@[\w.\-]+\.[a-zA-Z]{2,}', text)
+    email = email_match.group(0) if email_match else '-'
+
+    # — Phone (10-digit, optionally with spaces/dashes/country code) —
+    phone_match = re.search(
+        r'(?:\+?\d[\s\-]?)?(\d[\s\-]?){9}\d',
+        text
+    )
+    if phone_match:
+        raw_phone = phone_match.group(0)
+        # Keep only digits, then re-format
+        digits = re.sub(r'\D', '', raw_phone)
+        phone = digits[-10:] if len(digits) >= 10 else digits
+    else:
+        phone = '-'
+
+    # — Name (first non-empty line that looks like a name) —
+    name = 'Unknown'
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # Skip lines that look like emails/phones/dates/urls
+        if re.search(r'[@:\d\/\.\|]', line):
+            continue
+        words = line.split()
+        # A name is usually 1-4 capitalised words with no common resume keywords
+        resume_stop = {'resume', 'cv', 'curriculum', 'vitae', 'profile',
+                       'objective', 'summary', 'linkedin', 'github'}
+        if (1 <= len(words) <= 5
+                and all(w[0].isupper() for w in words if w)
+                and not any(w.lower() in resume_stop for w in words)):
+            name = ' '.join(words)
+            break
+
+    return {'name': name, 'email': email, 'phone': phone}
+
 def extract_text(file):
     filename = file.filename.lower()
     if filename.endswith('.pdf'):
@@ -285,6 +325,9 @@ def match():
                 app.logger.warning(f"[MATCH] Extraction failed: {file.filename}")
                 results.append({
                     'filename':           file.filename,
+                    'name':               'Unknown',
+                    'email':              '-',
+                    'phone':              '-',
                     'match_score':        15,
                     'skill_score':        0,
                     'project_score':      20,
@@ -305,6 +348,7 @@ def match():
 
             # ── Scoring ──────────────────────────────────────────────────────
             try:
+                identity       = extract_identity(text)
                 sections       = detect_sections(text)
                 detected_skills = detect_skills(text)
                 resume_skills  = set(detected_skills)
@@ -340,6 +384,9 @@ def match():
 
                 results.append({
                     'filename':           file.filename,
+                    'name':               identity['name'],
+                    'email':              identity['email'],
+                    'phone':              identity['phone'],
                     'match_score':        match_score,
                     'skill_score':        skill_score,
                     'project_score':      proj_score,
@@ -360,6 +407,9 @@ def match():
                 app.logger.warning(f"[MATCH] Scoring failed for {file.filename}: {score_err}")
                 results.append({
                     'filename':           file.filename,
+                    'name':               'Unknown',
+                    'email':              '-',
+                    'phone':              '-',
                     'match_score':        15,
                     'skill_score':        0,
                     'project_score':      20,
@@ -457,6 +507,9 @@ def match():
                 if file.filename:
                     results.append({
                         'filename':           file.filename,
+                        'name':               'Unknown',
+                        'email':              '-',
+                        'phone':              '-',
                         'match_score':        15,
                         'skill_score':        0,
                         'project_score':      20,
