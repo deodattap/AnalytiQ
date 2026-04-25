@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Upload Your Resume | Kinetic Mentor</title>
+<title>Upload Candidate Resumes | AnalytiQ</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -194,13 +194,13 @@
     <div class="text-center mb-12 space-y-4 relative z-10 animate-in delay-1">
         <span class="step-pill">
             <span class="material-symbols-outlined text-[13px]">description</span>
-            Resume Analysis
+            Candidate Screening
         </span>
         <h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-            Upload your <span class="text-transparent bg-clip-text soul-gradient-primary">resume</span>
+            Upload candidate <span class="text-transparent bg-clip-text soul-gradient-primary">resume</span>
         </h1>
         <p class="text-on-surface-variant text-base md:text-lg max-w-lg mx-auto font-medium leading-relaxed">
-            We'll scan it instantly and give you a full breakdown with a score, gaps, and how to fix them.
+            Upload one or more resumes and we'll screen them instantly with a full skill and experience breakdown.
         </p>
     </div>
 
@@ -219,7 +219,7 @@
             </div>
 
             <div class="text-center space-y-1" id="uploadText">
-                <p class="font-headline font-bold text-on-surface text-lg">Drag & drop your resume here</p>
+                <p class="font-headline font-bold text-on-surface text-lg">Drag & drop resumes here</p>
                 <p class="text-sm text-on-surface-variant font-medium">or click to browse files</p>
             </div>
 
@@ -278,7 +278,7 @@
             <button id="analyzeBtn" disabled
                 class="btn-analyze soul-gradient-primary text-on-primary font-headline font-bold text-lg px-12 py-5 rounded-full shadow-xl shadow-primary/30 flex items-center gap-3 w-full md:w-auto justify-center">
                 <span class="material-symbols-outlined">psychology</span>
-                Analyze My Resume
+                Analyze Candidates
             </button>
             <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">bolt</span>
@@ -293,7 +293,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
                 <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">grade</span>
-                <p class="text-xs font-bold text-on-surface font-headline">Resume Score</p>
+                <p class="text-xs font-bold text-on-surface font-headline">Candidate Score</p>
             </div>
             <div class="text-center space-y-2 p-4 bg-surface-container-low rounded-xl">
                 <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">find_in_page</span>
@@ -315,7 +315,7 @@
 <!-- Footer -->
 <footer class="border-t border-outline-variant/20 py-6 px-6 mt-auto">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label">© 2025 AnalytiQ. All rights reserved.</p>
         <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm">lock</span>
             Your data is encrypted and never stored permanently.
@@ -420,7 +420,7 @@
             console.error("Fetch Error:", error);
             alert("Error: " + error.message);
             btn.disabled = false;
-            btn.innerHTML = '<span class="material-symbols-outlined">psychology</span> Analyze My Resume';
+            btn.innerHTML = '<span class="material-symbols-outlined">psychology</span> Analyze Candidates';
         }
     });
 </script>

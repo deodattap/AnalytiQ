@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Shortlist Candidates Results | Kinetic Mentor</title>
+<title>Candidate Evaluation Dashboard | AnalytiQ</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -458,7 +458,7 @@
 <!-- Footer -->
 <footer class="border-t border-outline-variant/20 py-6 px-6 mt-6">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-xs text-on-surface-variant font-label">© 2025 Kinetic Mentor. All rights reserved.</p>
+        <p class="text-xs text-on-surface-variant font-label">© 2025 AnalytiQ. All rights reserved.</p>
         <p class="text-xs text-on-surface-variant font-label flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm">lock</span>
             Your data is encrypted and never stored permanently.
@@ -602,9 +602,9 @@ function buildCmpSkills(c) {
         : '<span style="font-size:11px;color:#595c5e;">None</span>';
     return `
         <div class="cmp-skills-wrap">
-            <div class="cmp-skills-title">Matched Skills</div>
+            <div class="cmp-skills-title">Matching Skills</div>
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">${mHTML}</div>
-            <div class="cmp-skills-title">Missing Skills</div>
+            <div class="cmp-skills-title">Skill Gaps</div>
             <div style="display:flex;flex-wrap:wrap;gap:4px;">${misHTML}</div>
         </div>`;
 }
@@ -700,11 +700,11 @@ function generateCandidateCardsHTML(candidates, globalIndices) {
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 z-10 relative">
                     <div class="bg-surface-container-low p-4 rounded-lg">
-                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-2.5">Matched Skills</p>
+                        <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-2.5">Matching Skills</p>
                         <div class="flex flex-wrap gap-1.5">${matchedHTML || '<span class="text-xs text-on-surface-variant font-medium">None detected</span>'}</div>
                     </div>
                     <div class="bg-surface-container-low p-4 rounded-lg">
-                        <p class="text-[10px] font-bold text-error uppercase tracking-widest mb-2.5">Missing Skills</p>
+                        <p class="text-[10px] font-bold text-error uppercase tracking-widest mb-2.5">Skill Gaps</p>
                         <div class="flex flex-wrap gap-1.5">${missingHTML || '<span class="text-xs text-on-surface-variant font-medium">None missing!</span>'}</div>
                     </div>
                 </div>
