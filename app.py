@@ -303,32 +303,52 @@ def detect_skills(text: str, weighted: bool = False):
         return found
     return list(found.keys())
 
+
 def detect_skills_sectioned(text: str) -> dict:
     """
-    Extract skills with section-awareness.  Skills found in the dedicated
-    skills section are boosted; skills found only in prose text are not.
+    Section-aware skill extraction with frequency boosting.
+    Skills in 'skills' section get highest confidence.
+    Skills found ONLY in _full fallback (not any named section) are penalised.
     Returns {skill_name: confidence_score 0-100}.
     """
     secs = split_sections(text)
     skill_confidence = {}
-    WEIGHTS = {
-        'skills': 1.0,      # explicitly listed
-        'projects': 0.85,   # demonstrated
-        'experience': 0.80, # used at work
-        'summary': 0.7,
-        'education': 0.6,
-        '_full': 0.5,       # fallback - anywhere in doc
+    # Section priority weights (section_name -> multiplier)
+    SEC_WEIGHTS = {
+        'skills':         1.00,   # explicitly listed skills
+        'experience':     0.82,   # used at work
+        'projects':       0.88,   # demonstrated in projects
+        'certifications': 0.75,   # certified in
+        'summary':        0.65,   # mentioned in summary
+        'education':      0.55,   # academic
     }
-    for sec_name, multiplier in WEIGHTS.items():
+    # Track which sections each skill appears in
+    skill_sections: dict[str, list[float]] = {}
+
+    for sec_name, multiplier in SEC_WEIGHTS.items():
         chunk = secs.get(sec_name, '')
-        if not chunk: continue
+        if not chunk:
+            continue
         chunk_lower = chunk.lower()
         for name, pat, cat, base_w in SKILL_PATTERNS:
             if pat.search(chunk_lower):
-                score = round(multiplier * base_w * 33.3)   # max ~100 for w=3 in skills
-                if name not in skill_confidence or skill_confidence[name] < score:
-                    skill_confidence[name] = score
-    return skill_confidence  # {skill: confidence 0-100}
+                pts = multiplier * base_w * 33.3   # max ~100 for w=3 in skills
+                skill_sections.setdefault(name, []).append(pts)
+
+    # _full fallback: pick up skills missed by section splitter
+    full_lower = text.lower()
+    for name, pat, cat, base_w in SKILL_PATTERNS:
+        if name not in skill_sections and pat.search(full_lower):
+            # Found only in full text — low confidence, keep it but penalised
+            skill_sections[name] = [base_w * 16.0]   # ~16-48 range
+
+    # Final confidence = best section score + frequency bonus
+    for name, scores in skill_sections.items():
+        best = max(scores)
+        freq_bonus = min(10, (len(scores) - 1) * 3)   # +3 per extra section, max +10
+        skill_confidence[name] = min(100, round(best + freq_bonus))
+
+    return skill_confidence
 
 # ── Section detection (boolean flags) ──────────────────────────────────────────
 def detect_sections(text: str) -> dict:
@@ -351,26 +371,33 @@ def detect_education_level(text: str) -> int:
 # ── Experience years ────────────────────────────────────────────────────────────
 def extract_experience_years(text: str) -> float:
     """
-    Parse experience from patterns like '3 years', '2+ years', 'Jan 2020 – Dec 2023'.
+    Parse experience years from multiple patterns.
     Returns total estimated years (capped at 30).
     """
+    import datetime
     lower = text.lower()
-    # Explicit mention: "X years of experience"
-    explicit = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*years?\s+(?:of\s+)?(?:experience|exp)', lower)
+    now = datetime.date.today()
+
+    # Pattern 1: "X years of experience" / "X+ years"
+    explicit = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*years?\s+(?:of\s+)?(?:experience|exp|work)', lower)
     if explicit:
         return min(30, max(float(v) for v in explicit))
-    # Date range arithmetic: count months between pairs
+
+    # Pattern 2: "experience of X years"
+    exp2 = re.findall(r'experience\s+of\s+(\d+(?:\.\d+)?)\s*\+?\s*years?', lower)
+    if exp2:
+        return min(30, max(float(v) for v in exp2))
+
+    # Pattern 3: month-year date ranges  e.g. Jan 2020 – Present
     months_map = {'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,
                   'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12}
     year_blocks = re.findall(
-        r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{4})'
-        r'\s*[-–—to]+\s*'
-        r'(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{4})|present|current|now)',
+        r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*(\d{4})'
+        r'\s*[-–—to/]+\s*'
+        r'(?:(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*(\d{4})|present|current|now|till\s+date)',
         lower
     )
     total_months = 0
-    import datetime
-    now = datetime.date.today()
     for blk in year_blocks:
         try:
             m1, y1 = months_map[blk[0]], int(blk[1])
@@ -383,9 +410,26 @@ def extract_experience_years(text: str) -> float:
             pass
     if total_months:
         return min(30, round(total_months / 12, 1))
-    # Fallback: highest single number near "year"
-    nums = re.findall(r'(\d+)\s*(?:year|yr)', lower)
-    return min(30, max((int(n) for n in nums), default=0))
+
+    # Pattern 4: year-only ranges  e.g. 2020 – 2023
+    year_only = re.findall(
+        r'\b(20\d{2})\s*[-–—to]+\s*(20\d{2}|present|current|now)\b', lower
+    )
+    total_months2 = 0
+    for y1s, y2s in year_only:
+        try:
+            y1 = int(y1s)
+            y2 = now.year if y2s in ('present','current','now') else int(y2s)
+            total_months2 += max(0, (y2 - y1) * 12)
+        except Exception:
+            pass
+    if total_months2:
+        return min(30, round(total_months2 / 12, 1))
+
+    # Pattern 5: bare numbers near year/yr
+    nums = re.findall(r'(\d+(?:\.\d+)?)\s*(?:\+\s*)?(?:year|yr)s?', lower)
+    valid = [float(n) for n in nums if 0 < float(n) <= 30]
+    return max(valid) if valid else 0.0
 
 # ── Certifications ──────────────────────────────────────────────────────────────
 def detect_certifications(text: str) -> list:
@@ -454,52 +498,69 @@ def extract_identity(text: str) -> dict:
 def compute_match_score(matched_skills: list, total_jd: int,
                         sections: dict, exp_years: float,
                         edu_level: int, certs: list,
-                        skill_confidence: dict) -> dict:
+                        skill_confidence: dict,
+                        all_resume_skills: list = None) -> dict:
     """
-    Multi-factor realistic scoring:
-      60% — Skill match (confidence-weighted where available)
-      20% — Experience relevance
-      10% — Education level
-      10% — Profile completeness (projects, certs, summary)
-    Returns dict with total and sub-scores.
+    Multi-factor realistic scoring with strong differentiation:
+      60 pts — Skill match (quadratic spread + confidence weighted)
+      20 pts — Experience relevance
+      10 pts — Education level
+      10 pts — Profile completeness
     """
     # ── Skill component (60 pts) ────────────────────────────────────────────
     if total_jd <= 0:
-        skill_comp = 50.0
+        # No JD → score based on resume breadth
+        breadth = len(all_resume_skills) if all_resume_skills else 0
+        skill_comp = min(50.0, breadth * 2.5)
     else:
-        # Base = matched / total
-        base_ratio = len(matched_skills) / total_jd
-        # Confidence boost: avg confidence of matched skills (0-100)
-        if matched_skills and skill_confidence:
-            avg_conf = sum(skill_confidence.get(s, 50) for s in matched_skills) / len(matched_skills)
-        else:
-            avg_conf = 50
-        conf_boost = (avg_conf / 100) * 10   # up to +10 pts
-        skill_comp = min(60, round(base_ratio * 50 + conf_boost, 1))
+        n_matched = len(matched_skills)
+        # Quadratic ratio: rewards more matches disproportionately
+        base_ratio = (n_matched / total_jd) ** 0.75   # gentler curve than linear
+        base_pts   = base_ratio * 52                    # up to 52 from ratio
 
-    # ── Experience component (20 pts) ───────────────────────────────────────
-    if exp_years >= 8:    exp_comp = 20
-    elif exp_years >= 5:  exp_comp = 17
-    elif exp_years >= 3:  exp_comp = 14
-    elif exp_years >= 1:  exp_comp = 10
-    elif exp_years > 0:   exp_comp = 7
-    else:
-        # No work exp but internship/projects detected
-        exp_comp = 5 if sections.get('experience') or sections.get('projects') else 2
+        # Confidence boost (up to +8 pts)
+        if matched_skills and skill_confidence:
+            avg_conf = sum(skill_confidence.get(s, 40) for s in matched_skills) / len(matched_skills)
+        else:
+            avg_conf = 40
+        conf_boost = (avg_conf / 100) * 8
+
+        # Skill diversity bonus: more unique categories matched → +bonus
+        matched_cats = set()
+        for name, pat, cat, w in SKILL_PATTERNS:
+            if name in matched_skills:
+                matched_cats.add(cat)
+        diversity_bonus = min(6, len(matched_cats) * 1.5)
+
+        skill_comp = min(60.0, round(base_pts + conf_boost + diversity_bonus, 1))
+
+    # ── Experience component (20 pts) — finer granularity ───────────────────
+    if exp_years >= 10:   exp_comp = 20
+    elif exp_years >= 7:  exp_comp = 18
+    elif exp_years >= 5:  exp_comp = 16
+    elif exp_years >= 3:  exp_comp = 13
+    elif exp_years >= 2:  exp_comp = 10
+    elif exp_years >= 1:  exp_comp = 8
+    elif exp_years > 0:   exp_comp = 5
+    elif sections.get('experience'): exp_comp = 4
+    elif sections.get('projects'):   exp_comp = 3
+    else:                            exp_comp = 1
 
     # ── Education component (10 pts) ────────────────────────────────────────
-    edu_map = {5:10, 4:9, 3:7, 2:5, 1:3, 0:2}
-    edu_comp = edu_map.get(edu_level, 2)
+    edu_map = {5: 10, 4: 9, 3: 7, 2: 5, 1: 3, 0: 1}
+    edu_comp = edu_map.get(edu_level, 1)
 
-    # ── Profile completeness (10 pts) ───────────────────────────────────────
-    prof_comp  = 0
-    if sections.get('projects'):      prof_comp += 4
-    if certs:                         prof_comp += 3
-    if sections.get('summary'):       prof_comp += 2
-    if sections.get('skills'):        prof_comp += 1
+    # ── Profile completeness (10 pts) — penalise missing sections ───────────
+    prof_comp = 0
+    if sections.get('projects'):       prof_comp += 3
+    if sections.get('skills'):         prof_comp += 2
+    if sections.get('summary'):        prof_comp += 2
+    if sections.get('certifications'): prof_comp += 2
+    # Extra cert count bonus
+    if len(certs) >= 3:                prof_comp = min(10, prof_comp + 1)
 
     total = round(skill_comp + exp_comp + edu_comp + prof_comp)
-    total = max(10, min(98, total))
+    total = max(8, min(97, total))
 
     return {
         'match_score':   total,
@@ -620,11 +681,13 @@ def analyze():
                  'kubernetes','mongodb','postgresql','java','figma','graphql']
     missing    = [s for s in important if s not in skill_conf]
     scores     = compute_match_score(detected, len(important), sections,
-                                     exp_years, edu_level, certs, skill_conf)
-    skill_score = min(100, len(detected) * 4)
-    proj_score  = 85 if sections.get('projects')   else 20
-    exp_score   = (min(100, int(exp_years/10*100))
-                   if exp_years else (50 if sections.get('experience') else 15))
+                                     exp_years, edu_level, certs, skill_conf,
+                                     all_resume_skills=detected)
+    skill_score = min(100, round(len(detected) / len(important) * 100))
+    proj_score  = (95 if sections.get('projects') and certs
+                   else 80 if sections.get('projects') else 20)
+    exp_score   = (min(98, int(exp_years / 12 * 100))
+                   if exp_years >= 1 else (45 if sections.get('experience') else 12))
     edu_score   = edu_level * 18
     edu_labels  = {5:'PhD',4:'Masters',3:'Bachelors',2:'Diploma',1:'High School',0:'Unknown'}
 
@@ -694,21 +757,29 @@ def match():
                 edu_level  = detect_education_level(text)
                 certs      = detect_certifications(text)
                 sd         = compute_match_score(matched, total_jd, sections,
-                                                 exp_years, edu_level, certs, skill_conf)
+                                                 exp_years, edu_level, certs, skill_conf,
+                                                 all_resume_skills=sorted(resume_set))
                 match_score = sd['match_score']
-                skill_score = min(100, len(resume_set) * 4)
-                proj_score  = 85 if sections.get('projects')   else 20
-                exp_score   = (min(100, int(exp_years/10*100))
-                               if exp_years else (50 if sections.get('experience') else 15))
+                # Sub-scores shown on dashboard (normalised 0-100)
+                skill_score = min(100, round(len(matched) / max(total_jd, 1) * 100)) if total_jd else min(100, len(resume_set) * 3)
+                proj_score  = (95 if sections.get('projects') and len(certs) >= 2
+                               else 80 if sections.get('projects')
+                               else 35 if sections.get('experience') else 15)
+                exp_score   = (min(98, int(exp_years / 12 * 100))
+                               if exp_years >= 1 else (45 if sections.get('experience') else 12))
                 has_edu     = bool(sections.get('education'))
                 cls         = classify(match_score)
                 cluster     = smart_cluster_label(resume_set)
 
-                print(f'[DEBUG] {file.filename} | name={identity["name"]} | '
-                      f'skills={len(resume_set)} matched={len(matched)} '
-                      f'exp={exp_years}yr edu_lvl={edu_level} '
-                      f'score={match_score} cls={cls}')
-                print(f'         matched: {matched}')
+                print(f'[DEBUG] {file.filename} | skills_found={len(resume_set)} | '
+                      f'matched={len(matched)} | exp={exp_years}yr | '
+                      f'edu_lvl={edu_level} | certs={len(certs)} | '
+                      f'score={match_score} | cls={cls}')
+                print(f'  -> matched_skills : {matched}')
+                print(f'  -> top_skills     : {sorted(resume_set)[:12]}')
+                print(f'  -> score_breakdown: skill={sd["skill_comp"]} '
+                      f'exp={sd["exp_comp"]} edu={sd["edu_comp"]} '
+                      f'prof={sd["prof_comp"]}')
 
                 vector = [1 if n in resume_set else 0 for n,*_ in _SR]
                 valid_indices.append(len(results))

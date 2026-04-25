@@ -46,11 +46,13 @@ def analyze():
     missing = [s for s in important if s not in skill_conf]
 
     scores      = compute_match_score(detected, len(important), sections,
-                                      exp_years, edu_level, certs, skill_conf)
-    skill_score = min(100, len(detected) * 4)
-    proj_score  = 85 if sections.get('projects')   else 20
-    exp_score   = (min(100, int(exp_years / 10 * 100))
-                   if exp_years else (50 if sections.get('experience') else 15))
+                                      exp_years, edu_level, certs, skill_conf,
+                                      all_resume_skills=detected)
+    skill_score = min(100, round(len(detected) / len(important) * 100))
+    proj_score  = (95 if sections.get('projects') and certs
+                   else 80 if sections.get('projects') else 20)
+    exp_score   = (min(98, int(exp_years / 12 * 100))
+                   if exp_years >= 1 else (45 if sections.get('experience') else 12))
     edu_score   = edu_level * 18
 
     edu_labels = {5:'PhD',4:'Masters',3:'Bachelors',2:'Diploma',1:'High School',0:'Unknown'}
@@ -124,22 +126,28 @@ def match():
                 certs      = detect_certifications(text)
 
                 sd          = compute_match_score(matched, total_jd, sections,
-                                                  exp_years, edu_level, certs, skill_conf)
+                                                  exp_years, edu_level, certs, skill_conf,
+                                                  all_resume_skills=sorted(resume_set))
                 match_score = sd['match_score']
-                skill_score = min(100, len(resume_set) * 4)
-                proj_score  = 85 if sections.get('projects')   else 20
-                exp_score   = (min(100, int(exp_years/10*100))
-                               if exp_years else (50 if sections.get('experience') else 15))
+                skill_score = min(100, round(len(matched) / max(total_jd, 1) * 100)) if total_jd else min(100, len(resume_set) * 3)
+                proj_score  = (95 if sections.get('projects') and len(certs) >= 2
+                               else 80 if sections.get('projects')
+                               else 35 if sections.get('experience') else 15)
+                exp_score   = (min(98, int(exp_years / 12 * 100))
+                               if exp_years >= 1 else (45 if sections.get('experience') else 12))
                 has_edu     = bool(sections.get('education'))
                 cls         = classify(match_score)
                 cluster     = smart_cluster_label(resume_set)
 
-                print(f'[DEBUG] {file.filename} | name={identity["name"]} | '
-                      f'skills={len(resume_set)} | matched={len(matched)} | '
-                      f'exp={exp_years}yr | edu={edu_level} | '
-                      f'score={match_score} | {cls}')
-                print(f'         matched_skills: {matched}')
-                print(f'         top_skills:     {sorted(resume_set)[:10]}')
+                print(f'[DEBUG] {file.filename} | skills_found={len(resume_set)} | '
+                      f'matched={len(matched)} | exp={exp_years}yr | '
+                      f'edu_lvl={edu_level} | certs={len(certs)} | '
+                      f'score={match_score} | cls={cls}')
+                print(f'  -> matched_skills : {matched}')
+                print(f'  -> top_skills     : {sorted(resume_set)[:12]}')
+                print(f'  -> score_breakdown: skill={sd["skill_comp"]} '
+                      f'exp={sd["exp_comp"]} edu={sd["edu_comp"]} '
+                      f'prof={sd["prof_comp"]}')
 
                 vector = [1 if n in resume_set else 0 for n,*_ in _SR]
                 valid_indices.append(len(results))
