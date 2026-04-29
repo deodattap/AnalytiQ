@@ -14,7 +14,7 @@ except ImportError:
     apriori = association_rules = None
     _AR_NUM = False
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='.')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 CORS(app)
 
@@ -646,13 +646,7 @@ def _fallback(filename, jd_skills, total_jd):
 
 @app.route('/')
 def index():
-    return send_from_directory(app.template_folder, 'index.html')
-
-@app.route('/<path:filename>')
-def static_files(filename):
-    if filename.startswith('api/'):
-        return jsonify({'error': 'Not found'}), 404
-    return send_from_directory(app.template_folder, filename)
+    return send_from_directory('.', 'index.html')
 
 
 @app.route('/api/analyze', methods=['POST'])
@@ -891,6 +885,14 @@ def match():
         print(f'[ERROR] {e}')
         app.logger.exception(f'[MATCH] {e}')
         return jsonify({'results': [], 'association_rules': [], 'error': str(e)}), 200
+
+
+@app.route('/<path:filename>')
+def static_files(filename):
+    # Never serve files for api/ paths — let Flask 404 handle it
+    if filename.startswith('api/'):
+        return jsonify({'error': 'Endpoint not found'}), 404
+    return send_from_directory('.', filename)
 
 
 @app.errorhandler(404)

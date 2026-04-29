@@ -425,134 +425,62 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite;">autorenew</span> Analyzing...';
 
-        // Demo mode flow: generate shortlist instantly (no backend/network dependency)
+        // Real backend call to /api/match
         try {
-            const ALL_SKILLS = [
-                "JavaScript", "Python", "React", "Node.js", "Docker", "AWS", "SQL", "Git", "HTML",
-                "CSS", "TypeScript", "Machine Learning", "Kubernetes", "Linux", "Communication",
-                "Problem Solving", "C++", "Java", "Go", "Figma", "UI/UX", "Agile", "Scrum",
-                "Data Analysis", "MongoDB", "REST API", "GraphQL", "Angular", "Vue", "Django", "Flask",
-                "Rust", "Ruby", "PHP", "Swift", "Kotlin", "Redis", "Firebase", "Tailwind", "Pandas", "NumPy", "Jenkins", "GCP"
-            ];
+            console.log("MATCH API HIT — sending POST to /api/match");
+            const formData = new FormData();
+            uploadedFiles.forEach(file => formData.append("files", file));
+            formData.append("job_description", jobDesc);
 
-            const jobDescWords = jobDesc.toLowerCase();
-            let requiredSkills = ALL_SKILLS.filter(s => jobDescWords.includes(s.toLowerCase()));
-            if (requiredSkills.length === 0) requiredSkills = ["Communication", "Problem Solving", "Teamwork", "Adaptability"];
-
-            const getWeight = (skill) => {
-                const s = skill.toLowerCase();
-                if (s === 'python') return 3;
-                if (s === 'react' || s === 'aws') return 2;
-                return 1;
-            };
-            const totalReqWeight = requiredSkills.reduce((sum, s) => sum + getWeight(s), 0);
-            const needsDegree = /(computer science|\bit\b|bachelor|degree)/.test(jobDescWords);
-
-            const COMMON_BASELINE = new Set(["html", "css", "javascript", "communication", "problem solving", "teamwork"]);
-            const RARE_SKILLS = new Set(["typescript", "kubernetes", "graphql", "go", "rust", "machine learning", "swift", "kotlin", "gcp"]);
-
-            const matchResults = uploadedFiles.map((file, idx) => {
-                const name = file.name;
-                const seed = name.length * (idx + 1);
-
-                // Deterministic pseudo-random in [0,1) based on candidate + skill
-                const stableRand = (skill) => {
-                    let h = 2166136261;
-                    const s = `${name}|${idx}|${skill}`;
-                    for (let i = 0; i < s.length; i++) {
-                        h ^= s.charCodeAt(i);
-                        h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
-                    }
-                    return ((h >>> 0) % 1000) / 1000;
-                };
-
-                const matched = [];
-                const missing = [];
-                let matchedWeight = 0;
-
-                requiredSkills.forEach(req => {
-                    const key = req.toLowerCase();
-                    let pMatch = 0.65; // default reliability
-                    if (COMMON_BASELINE.has(key)) pMatch = 0.9;
-                    if (RARE_SKILLS.has(key)) pMatch = 0.45;
-
-                    if (stableRand(key) < pMatch) {
-                        matched.push(req);
-                        matchedWeight += getWeight(req);
-                    } else {
-                        missing.push(req);
-                    }
-                });
-
-                // Safety net: if a baseline skill is required, keep at least one baseline matched.
-                if (matched.length === 0 && requiredSkills.some(s => COMMON_BASELINE.has(s.toLowerCase()))) {
-                    const fallbackSkill = requiredSkills.find(s => COMMON_BASELINE.has(s.toLowerCase()));
-                    if (fallbackSkill) {
-                        matched.push(fallbackSkill);
-                        matchedWeight += getWeight(fallbackSkill);
-                        const missIdx = missing.findIndex(s => s === fallbackSkill);
-                        if (missIdx !== -1) missing.splice(missIdx, 1);
-                    }
-                }
-
-                const skillScore = totalReqWeight > 0 ? (matchedWeight / totalReqWeight) * 100 : 100;
-                const candidateExp = Math.round(Math.abs(Math.sin(seed * 3))); // 0 or 1 for demo realism
-                const expScore = 100; // neutralized in demo mode
-                const projectScore = Math.floor(Math.abs(Math.sin(seed * 7)) * 40) + 60;
-                const hasRelevantEdu = Math.abs(Math.cos(seed * 5)) > 0.4;
-                const eduScore = hasRelevantEdu ? 100 : (needsDegree ? 50 : 80);
-                const finalScore = (0.50 * skillScore) + (0.20 * expScore) + (0.20 * projectScore) + (0.10 * eduScore);
-
-                const baseName = name.replace(/\.[^.]+$/, "").replace(/[_\-.]+/g, " ").trim();
-                const words = baseName.split(/\s+/).filter(Boolean);
-                const displayName = words.length ? words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Candidate " + (idx + 1);
-                const emailSlug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "");
-                const phoneTail = String(1000 + ((idx + 1) * 137) % 9000);
-
-                return {
-                    filename: name,
-                    name: displayName,
-                    email: `${emailSlug}@maildemo.ai`,
-                    phone: `+91 9${phoneTail} ${phoneTail} ${phoneTail}`,
-                    linkedin: `https://www.linkedin.com/in/${emailSlug}`,
-                    github: `https://github.com/${emailSlug.replace(/\./g, "")}`,
-                    match_score: Math.round(finalScore),
-                    skill_score: Math.round(skillScore),
-                    exp_score: Math.round(expScore),
-                    project_score: Math.round(projectScore),
-                    edu_score: Math.round(eduScore),
-                    candidate_exp: candidateExp,
-                    matched_skills: matched,
-                    missing_skills: missing,
-                    has_edu: hasRelevantEdu,
-                    is_duplicate: false
-                };
+            const response = await fetch('/api/match', {
+                method: 'POST',
+                body: formData
             });
 
-            for (let i = 0; i < matchResults.length; i++) {
-                for (let j = i + 1; j < matchResults.length; j++) {
-                    const ri = matchResults[i];
-                    const rj = matchResults[j];
-                    let similarSkills = 0;
-                    if (ri.matched_skills.length > 0 && rj.matched_skills.length > 0) {
-                        const intersection = ri.matched_skills.filter(s => rj.matched_skills.includes(s));
-                        similarSkills = intersection.length / Math.max(ri.matched_skills.length, rj.matched_skills.length);
-                    }
-                    if (similarSkills > 0.85 || ri.filename === rj.filename) {
-                        ri.is_duplicate = true;
-                        rj.is_duplicate = true;
-                    }
-                }
+            const data = await response.json();
+            console.log("Response from /api/match:", data);
+
+            if (data.error && !data.results) {
+                throw new Error(data.error);
             }
 
-            matchResults.sort((a, b) => b.match_score - a.match_score);
+            const matchResults = (data.results || []).map(r => ({
+                filename:        r.filename,
+                name:            r.name,
+                email:           r.email,
+                phone:           r.phone,
+                linkedin:        r.linkedin,
+                github:          r.github,
+                match_score:     r.match_score,
+                skill_score:     r.skill_score,
+                exp_score:       r.exp_score,
+                project_score:   r.project_score,
+                candidate_exp:   r.candidate_exp,
+                matched_skills:  r.matched_skills,
+                missing_skills:  r.missing_skills,
+                has_edu:         r.has_edu,
+                edu_level:       r.edu_level,
+                edu_label:       r.edu_label,
+                certifications:  r.certifications,
+                recommendations: r.recommendations,
+                cluster:         r.cluster,
+                classification:  r.classification,
+                similar_candidates: r.similar_candidates,
+                skill_confidence:r.skill_confidence,
+                is_duplicate:    r.is_duplicate,
+                score_breakdown: r.score_breakdown,
+                total_jd_skills: r.total_jd_skills,
+                skills_list:     r.skills_list,
+            }));
+
             sessionStorage.setItem('matchResults', JSON.stringify(matchResults));
             sessionStorage.setItem('jobDescription', jobDesc);
             sessionStorage.setItem('resumeFileNames', JSON.stringify(uploadedFiles.map(f => f.name)));
+            sessionStorage.setItem('associationRules', JSON.stringify(data.association_rules || []));
             window.location.href = 'company_result.html';
         } catch (error) {
-            console.error("Demo Generation Error:", error);
-            alert("Could not generate shortlist. Please try again.");
+            console.error("Fetch Error:", error);
+            alert("Error: " + error.message);
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Analyze Candidates';
         }
