@@ -471,7 +471,7 @@
 const raw = sessionStorage.getItem('matchResults');
 if (!raw) { window.location.href = 'company_input.html'; throw new Error('No result data'); }
 let data = JSON.parse(raw);
-let matchResults = data.results || [];
+let matchResults = Array.isArray(data) ? data : (data.results || []);
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -693,7 +693,6 @@ function generateCandidateCardsHTML(candidates, globalIndices) {
                     <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-on-surface-variant font-semibold">
                         <span class="flex items-center gap-1.5" title="Interview Readiness"><span class="material-symbols-outlined text-[15px] opacity-70">record_voice_over</span> Readiness <span class="${readinessColor}">${readiness}</span></span>
                         <span class="flex items-center gap-1.5" title="50% weight"><span class="material-symbols-outlined text-[15px] opacity-70">psychology</span> Skills <span class="${colorClass}">${c.skill_score}%</span></span>
-                        <span class="flex items-center gap-1.5" title="20% weight"><span class="material-symbols-outlined text-[15px] opacity-70">work</span> Exp <span class="${colorClass}">${c.candidate_exp} yrs</span> (${c.exp_score}%)</span>
                         <span class="flex items-center gap-1.5" title="20% weight"><span class="material-symbols-outlined text-[15px] opacity-70">code</span> Projects <span class="${colorClass}">${c.project_score}%</span></span>
                         <span class="flex items-center gap-1.5" title="10% weight"><span class="material-symbols-outlined text-[15px] opacity-70">school</span> Edu <span class="${colorClass}">${c.has_edu ? 'CS/IT' : 'Other'}</span></span>
                     </div>
@@ -1107,4 +1106,3 @@ function exportPDF() {
 
 </body>
 </html>
-

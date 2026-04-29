@@ -244,6 +244,7 @@
 
     // ── Main: Simulate Analysis ───────────────────────────────
     function runMatch() {
+        try {
         const ALL_SKILLS = [
             "JavaScript", "Python", "React", "Node.js", "Docker", "AWS", "SQL", "Git", "HTML", 
             "CSS", "TypeScript", "Machine Learning", "Kubernetes", "Linux", "Communication", 
@@ -267,11 +268,8 @@
         };
         const totalReqWeight = requiredSkills.reduce((sum, s) => sum + getWeight(s), 0);
 
-        // 3. Experience Match setup
-        let requiredExp = 0;
-        const expMatch = jobDescWords.match(/(\d+)[+\s-]*years?(?:\s*of\s*experience)?/);
-        if (expMatch) requiredExp = parseInt(expMatch[1], 10);
-        if (requiredExp === 0) requiredExp = 2; // Default baseline
+        // Demo mode: no explicit experience requirement in matching logic
+        const requiredExp = 0;
 
         // 4. Education Filter setup
         const needsDegree = /(computer science|\bit\b|bachelor|degree)/.test(jobDescWords);
@@ -303,8 +301,9 @@
 
             // 3. Experience Extraction (Simulated) & Matching
             // Simulate regex extraction from resume text ("6 years...", etc.)
-            let candidateExp = Math.floor(Math.abs(Math.sin(seed * 3)) * 7); 
-            let expScore = requiredExp > 0 ? (candidateExp >= requiredExp ? 100 : (candidateExp / requiredExp) * 100) : 100;
+            // Demo-safe experience signal: keep only 0 or 1 year to avoid fake-looking large values
+            let candidateExp = Math.round(Math.abs(Math.sin(seed * 3)));
+            let expScore = 100;
 
             // 2. Add multi-factor variables: Projects (Simulated from extracted repos/mentions)
             let projectScore = Math.floor(Math.abs(Math.sin(seed * 7)) * 40) + 60; // Base solid points
@@ -362,6 +361,10 @@
             progressBar.style.width = '100%';
             setTimeout(() => { window.location.href = 'company_result.html'; }, 600);
         }, 2200); // simulate 2.2s load using timer since no API
+        } catch (err) {
+            console.error(err);
+            showError('Something went wrong while generating demo analysis.');
+        }
     }
 
     runMatch();
